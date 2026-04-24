@@ -69,6 +69,11 @@ The ESP32-S3 is a powerful microcontroller designed for AIoT (Artificial Intelli
 Understanding its internal structure helps us see how it processes data, communicates with devices, and connects to networks.
 
 To understand how the ESP32-S3 works, we need to break down its core components:
+
+<img src="./attachments/esp32s3pins.png" />
+
+
+
 #### Microcontroller Core
 The ESP32-S3 contains a dual-core Xtensa LX7 processor capable of running at speeds up to 240 MHz.   
 This processor acts as the brain of the system. It executes the program instructions, processes data from sensors, performs calculations, and controls outputs such as displays, motors, and communication interfaces.
@@ -393,3 +398,137 @@ do{
 We can enhance the control of our loops by using the keywords `break` and `continue`:
 - **`break`**: The `break` statement is used to terminate and exit a loop immediately when a specific condition is met.
 - **`continue`**: The `continue` statement is used to skip the current iteration of the loop and proceed with the next one, effectively ignoring the instructions for that iteration when a specific condition is true.
+
+### Comments :
+Comments are lines of code that the compiler will ignore. They are used to add explanatory notes and improve the readability of our code. There are two ways to create comments:
+- **Single-line comments:** Begin with ``//`` and continue until the end of the current line. All text following ``//`` on the same line is ignored by the compiler.
+- **Multi-line comments:** Begin with ``/*`` and end with ``*/``. Any text between these two symbols, including multiple lines, will be ignored by the compiler.
+
+## Creating Our First Projects
+Now that we understand what the ESP32‑S3 microcontroller is and have reviewed the basic concepts of the C, we can begin writing a simple program for the ESP32-S3.
+
+A traditional first project in embedded systems is a blinking LED. This project helps us verify that:
+- The development environment works correctly
+- The code compiles successfully
+- The board can control its GPIO pins
+
+Before writing any code, we need to set up the project folder structure used by the ESP‑IDF.
+### Setting Up the Project Folder
+First, create a folder that will contain all the files related to our project.  ESP-IDF projects follow a standard directory structure that allows the build system to compile and organize our code properly.
+
+A minimal ESP-IDF project structure looks like this:
+```
+my-new-project/ 
+├── CMakeLists.txt (Top)
+└── main/ 
+	├── CMakeLists.txt 
+	└── main.c
+```
+- `my-new-project` represents the root folder of our project It contains configuration files and subfolders that define the entire project.
+- `CMakeLists.txt` defines global build settings for the project, we set in it where ESP-IDF build system is located, which components belong to the project and how to organize the build process.
+
+```txt
+# The minimum version of CMake required 
+cmake_minimum_required(VERSION 3.16) 
+
+# Include the ESP-IDF build system include($ENV{IDF_PATH}/tools/cmake/project.cmake) 
+
+# Our project name 
+project(my-new-project)
+```
+- `main/` In ESP-IDF, projects are organized into into components. which are small building bock that handel specific tasks,The `main` folder is the default component that contains our main application code. In small projects, all code can remain inside this folder.  
+- `main/CMakeLists.txt` This component level build configuration file it tells the build system which source files belong to this component.
+```
+idf_component_register(SRCS "main.c"  
+INCLUDE_DIRS ".")
+```
+We to set two main things in this file
+	- `SRCS` lists the source files to compile
+	- `INCLUDE_DIRS` specifies directories containing header files
+
+- `main/main.c` This file contains the actual program code that will run on the ESP32-S3.
+
+Lets apply that and create `blink` folder and inside it, we add the files we discussed above.
+
+### Creating The Circuit
+Now that we have set up our project folder, let's create the circuit, We will need an LED (Light Emitting Diode). An LED allows current to flow in only one direction and has two legs:
+- **Longer leg (Anode):** connects to the positive side (signal or power).
+- **Shorter leg (Cathode):** connects to **ground (GND)**.
+
+We will also need a 220-ohm resistor. The resistor limits the current flowing through the LED to prevent it from burning out.     
+To control the LED and make it blink, we will use a digital GPIO pin on the ESP32. For this example, we will use GPIO 2.
+
+Now lets build our circuit: 
+1. Connect the long leg (anode) of the LED to GPIO 2 through the 220-ohm resistor.
+2. Connect the short leg (cathode) of the LED to a GND pin on the ESP32.
+
+<img src="./attachments/circuit.png"/>
+
+
+### Creating the Program
+Now let’s program the ESP32 board. We go to `main/main.c` file, and first we start by importing the library that we will need
+```c
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+```
+**`#include <stdio.h>`**  is the Standard Input/Output library from C. It allows us to use functions such as `printf()` to print messages to the serial monitor. 
+
+**`#include "freertos/FreeRTOS.h"`** This header includes the FreeRTOS core definitions used by the ESP-IDF framework. FreeRTOS is the real-time operating system that runs on the ESP32 and manages tasks, timing, and system resources.
+
+**`#include "freertos/task.h"`**  This library provides functions for creating and managing tasks in FreeRTOS. It also includes useful functions such as `vTaskDelay()` that allow us to pause a task for a specific amount of time .
+
+**`#include "driver/gpio.h"`**  This header gives us access to the GPIO (General Purpose Input/Output) driver of the ESP32. It allows us to configure pins as inputs or outputs and control them, which is how we will turn the LED on and off using GPIO 2.
+
+Now we create our `app_main` function,  we start by setting the mode of the pin,after that 
+```c
+void app_main(void){
+	gpio_reset_pin(2);
+	gpio_set_direction(2, GPIO_MODE_OUTPUT);
+```
+After that, we create an infinite `while` loop. Inside this loop, we control the LED by sending signals to GPIO 2.   
+To turn the LED on and off, we use the function:`gpio_set_level(PIN, signal);` which sets the electrical level of the specified GPIO pin.
+- **`PIN`** represents the GPIO number we want to control (in our case, **GPIO 2**).
+- **`signal`** determines the output level:
+    - `1`  → turns the LED **on**
+    - `0`  → turns the LED **off**
+
+To create the blinking effect, we add a delay between turning the LED on and off using: `vTaskDelay(1000 / portTICK_PERIOD_MS);` which the task for a specific amount of time.
+- **`1000`** represents the delay time in **milliseconds (1 second)**.
+- **`portTICK_PERIOD_MS`** converts milliseconds into **FreeRTOS system ticks**, which is the time unit used by the operating system.
+
+```c
+    while (1) {
+        gpio_set_level(2, 1);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        gpio_set_level(2, 0);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+```
+### Executing The Program
+Now let's execute and flash the program into our microcontroller.
+#### Connect and Set Target
+We start by plugging in the microcontroller via USB. After that, we select the target microcontroller (the ESP32-S3) so the compiler knows which chip architecture to use:
+```shell
+idf.py set-target esp32s3
+```
+### Identify the Port
+Next, we check on what port the microcontroller is connected to. We can find this by scanning the connected hardware:
+```shell
+esptool.py chip_id
+```
+On Windows, this will look like `COM3`; on Linux/macOS, it will look like `/dev/ttyUSB0` or `/dev/cu.usbmodem...`.
+#### Build the Project
+After that we compile our code into a machine-readable format. This step checks for errors in our C code:
+```shell
+idf.py build
+```
+#### Flash and Monitor
+Finally, we flash our program.
+```
+idf.py -p PORT flash monitor
+```
+Replace `PORT` with the ID you found in step 2:
+ 
