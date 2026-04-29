@@ -1,8 +1,9 @@
 ## Objectives
-- Exploring the ESP Ecosystem
-- Understanding ESP Architecture and Development Boards
-## Exploring ESP Microcontrollers
+- Explore the ESP ecosystem
+- Understand ESP architecture and development boards
+- Learn C programming concepts and create a blinking LED project
 
+## Exploring ESP Microcontrollers
 ### Introduction
 Microcontrollers are powerful devices that allow us to build smart and automated systems. While platforms like Arduino made learning electronics accessible, the modern world demands connectivity. Today’s projects often need to connect to the internet, stream data to the cloud, or communicate with our smartphones. Adding these capabilities to traditional basic microcontrollers used to be complex and expensive.
 

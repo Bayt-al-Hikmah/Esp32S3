@@ -5,17 +5,31 @@
 ### Introduction
 We live in the electric century. Everywhere we look around us, we see electrical and digital devices. Our homes run on electrical power. Our phones, TVs, and even our cars are becoming electric. But what is electricity, and where does it come from?
 ### Atoms
-To Understand electricity lets start by diving deep into the building blocks of our universe. We know that matter, and everything around us, is composed of atoms. These atoms themselves are made of three basic building blocks: electrons, protons, and neutrons. Protons are positively charged, and electrons are negatively charged. The protons and neutrons are located in the center of the atom, called the nucleus, while the electrons move around it in a cloud-like region.   
-In the normal state of an atom, the number of electrons is equal to the number of protons, which makes the atom neutral in charge. However, atoms can undergo physical changes where they lose or gain electrons. When this happens, they become positively or negatively charged.
+To understand electricity, we must start with the smallest building blocks of matter: **atoms**. Everything around us is made of atoms. Each atom consists of three main particles: **protons**, **neutrons**, and **electrons**.
+
+- **Protons** carry a positive charge
+- **Electrons** carry a negative charge
+- **Neutrons** have no charge
+
+Protons and neutrons are packed together in the center of the atom, called the **nucleus**, while electrons move around the nucleus in a cloud-like region.
+
 
 <img src="./attachments/atom.png" height="250px">
 
-### Static Electiricty
-Humanity discovered electricity thousands of years ago. One of the most powerful natural examples of electricity is lightning. During a storm, electric charges separate inside a cloud. The top of the cloud becomes positively charged, while the bottom becomes negatively charged. The negative charge at the bottom pushes electrons away from the ground, making the ground positively charged. This creates a strong electric field between the cloud and the Earth. When the electric field becomes strong enough, the air can no longer block the charges. Electricity suddenly flows between the cloud and the ground. This fast movement of electrons produces the bright flash we see as lightning.     
+In a normal state, an atom has equal numbers of protons and electrons, so it is electrically neutral. However, atoms can **gain or lose electrons**.
+
+- If an atom **loses electrons**, it becomes **positively charged**
+- If it **gains electrons**, it becomes **negatively charged**
+
+Some materials hold their electrons tightly, while others allow electrons to move more easily. This difference is key to understanding electricity.
+### Electricity
+Electricity is a phenomenon that occurs when electrons move from negatively charged materials to positively charged ones. In nature we have two type of electricity, static and dynamic.   
+#### Static Electiricty
+The earliest form of electricity humans experienced is called static electricity. One of the most powerful natural examples of static electricity is lightning. During a storm, electric charges separate inside a cloud. The top of the cloud becomes positively charged, while the bottom becomes negatively charged. The negative charge at the bottom pushes electrons away from the ground, making the ground positively charged. This creates a strong electric field between the cloud and the Earth. When the electric field becomes strong enough, the air can no longer block the charges. Electricity suddenly flows between the cloud and the ground. This fast movement of electrons produces the bright flash we see as lightning.     
 
 <img src="./attachments/lightning.png"/>
 
-Another early encounter with electricity happened when people rubbed two materials together. This process creates a charged surface: one object becomes negatively charged by gaining electrons, while the other becomes positively charged by losing electrons. When we bring two objects with the same type of charge close to each other, they repel one another. On the other hand, when we bring materials with opposite charges together, they attract each other. The force of attraction and repulsion between charges can be described by a physical law and expressed using a mathematical equation.
+Another early encounter with static electricity happened when people rubbed two materials together. This process creates a charged surface: one object becomes negatively charged by gaining electrons, while the other becomes positively charged by losing electrons. When we bring two objects with the same type of charge close to each other, they repel one another. On the other hand, when we bring materials with opposite charges together, they attract each other. The force of attraction and repulsion between charges can be described by a physical law and expressed using a mathematical equation.
 $$F = \frac{k \times (q_1 \times q_2)}{ r^2}$$
 - **F** = electric force between the two charges (in newtons)
 - **k** = Coulomb’s constant (about 9 × 10⁹ N·m²/C²)
@@ -25,9 +39,9 @@ $$F = \frac{k \times (q_1 \times q_2)}{ r^2}$$
 
 <img src="./attachments/static_electricity.png">
 
-Through many experiments, scientists discovered that materials behave in consistent ways when they become charged. Some materials tend to gain electrons and become negatively charged, while others tend to lose electrons and become positively charged.
-### Electricity
-Electricity is a phenomenon that occurs when electrons move from negatively charged materials to positively charged ones. Rubbing materials together, showed one way to create electric charge. However, scientists discovered other methods to charge materials, including chemical reactions.   
+
+#### Dynamic Electricity
+Unlike static electricity which is based on charges at rest, dynamic electricity, consists of the continuous flow of electrons. This flow is called electric current. It is more useful because we can control it more easily, since it is continuous and does not occur only for a brief moment. There are many ways to generate this type of continuous current; one of them is through chemical reactions.
 
 To generate electricity from chemical reactions, one of the most common methods is using **acids**. Acids are special substances that dissolve in water and produce positive and negative ions. For example, when hydrochloric acid (HCl) dissolves in water, it reacts with water molecules and forms hydronium ions (H₃O⁺) and chloride ions (Cl⁻). The hydronium ions are positively charged and make the solution reactive.
 
