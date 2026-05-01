@@ -270,8 +270,8 @@ Arithmetic operators are used to perform mathematical operations. They allow cal
 - **Subtraction (-):** Subtracts the second operand from the first. Similar to addition, it operates on ASCII values when used with char types.
 - **Multiplication (*):** Multiplies two operands. This operator cannot be directly used with char types.
 - **Division (/):**
-    - For float or double types, it performs regular division and returns the exact result.
-    - For int or long types, it performs integer division, which discards any fractional part of the result. It does not round the result.
+	- For float or double types, it performs regular division and returns the exact result.
+	- For int or long types, it performs integer division, which discards any fractional part of the result. It does not round the result.
 - **Modulo (%):** Returns the remainder of the division between two operands. It is only applicable for int and long types.
 ### Compound Operators
 Compound operators combine an arithmetic operation with assignment in a single step. They make the code shorter, clearer, and easier to read.

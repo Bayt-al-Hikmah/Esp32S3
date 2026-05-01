@@ -10,7 +10,7 @@ The ESP32-S3 features a highly flexible GPIO matrix, providing up to 45 physical
 - **Analog pins:** Used to read analog signals, capturing a range of voltage values through internal ADCs (Analog-to-Digital Converters).
 
 
-<img src="./attachments/Esp32_Gpio.png"/>
+<img src="./attachments/Esp32_Gpio.png" height="300px"/>
 
 ### Digital GPIO Pins
 Unlike simpler microcontrollers, the ESP32-S3 allows almost any pin to be configured for digital input or output functions. These pins handle only two states: HIGH (3.3V) and LOW (0V). This means they can either send or receive digital signals, such as turning an LED on or off, or reading the state of a button.
@@ -44,7 +44,7 @@ Let’s build a simple circuit where we turn an LED on and off using a push butt
 
 For this project, we will use GPIO 4 to control the LED and GPIO 1 for the push button. We will use a 220-ohm resistor with the LED, and for the push button, we will configure the GPIO pin with a pull-down resistor.
 
-<img src="./attachments/circuit1.png" />
+<img src="./attachments/circuit1.png" height="300px"/>
 
 Now, Lets create our program, we start by including the necessary libraries. After that, we declare a variable to keep track of the LED’s state.
 
@@ -63,19 +63,19 @@ bool LedState = false;
 
 void app_main(void){
 
-    gpio_reset_pin(4);
-    gpio_reset_pin(2);
-    gpio_set_direction(2, GPIO_MODE_OUTPUT);
-    gpio_set_direction(4, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(4,GPIO_PULLDOWN_ONLY);
+    gpio_reset_pin(4);
+    gpio_reset_pin(2);
+    gpio_set_direction(2, GPIO_MODE_OUTPUT);
+    gpio_set_direction(4, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(4,GPIO_PULLDOWN_ONLY);
 
-    while (1) {
-        if(gpio_get_level(4)){
-            LedState ^=1;
-            gpio_set_level(2, LedState);
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-        }  
-    }
+    while (1) {
+        if(gpio_get_level(4)){
+            LedState ^=1;
+            gpio_set_level(2, LedState);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        }  
+    }
 }
 ```
 #### Buzzers
@@ -85,7 +85,7 @@ A buzzer is a special component that produces sound when we send a HIGH signal t
 
 Let’s build a simple project where an LED blinks and an active buzzer produces sound when a push button is pressed. We will connect the LED to GPIO 2, the buzzer to GPIO 20, and the push button to GPIO 4.
 
-<img src="./attachments/circuit2.png" />
+<img src="./attachments/circuit2.png" height="300px"/>
 
 Now, let’s create our C program using ESP-IDF, We start by including the necessary libraries. For this example, we don’t need to keep track of any state, so we go directly to the `app_main` function. First, we reset the pins we will use, then configure GPIO 4 as an input and GPIO 2 and GPIO 20 as outputs. Next, we set GPIO 4 to pull-down mode so that it reads LOW (0) by default when the button is not pressed.
 
@@ -99,25 +99,25 @@ Outside the inner loop, we set GPIO 20 to LOW, which deactivates the buzzer when
 #include "driver/gpio.h"
 
 void app_main(void){
-    gpio_reset_pin(4);
-    gpio_reset_pin(2);
-    gpio_reset_pin(20);
-    
-    gpio_set_direction(2, GPIO_MODE_OUTPUT);
-    gpio_set_direction(20, GPIO_MODE_OUTPUT);
-    gpio_set_direction(4, GPIO_MODE_INPUT);
-    
-    gpio_set_pull_mode(4,GPIO_PULLDOWN_ONLY);
-    while (1) {
-        while(gpio_get_level(4)){
-            gpio_set_level(20, 1);
-            gpio_set_level(2, 1);
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-            gpio_set_level(2, 0);
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-        }  
-         gpio_set_level(20, 0);
-    }
+    gpio_reset_pin(4);
+    gpio_reset_pin(2);
+    gpio_reset_pin(20);
+    
+    gpio_set_direction(2, GPIO_MODE_OUTPUT);
+    gpio_set_direction(20, GPIO_MODE_OUTPUT);
+    gpio_set_direction(4, GPIO_MODE_INPUT);
+    
+    gpio_set_pull_mode(4,GPIO_PULLDOWN_ONLY);
+    while (1) {
+        while(gpio_get_level(4)){
+            gpio_set_level(20, 1);
+            gpio_set_level(2, 1);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+            gpio_set_level(2, 0);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+        }  
+         gpio_set_level(20, 0);
+    }
 }
 ```
 #### Obstacle Sensor
@@ -129,11 +129,11 @@ We use the built-in potentiometer to adjust the detection distance of the obstac
 
 When the potentiometer is turned clockwise, the detection distance becomes larger, making the sensor more sensitive. When it is turned counterclockwise, the detection distance becomes shorter, making the sensor less sensitive.
 
-<img src="./attachments/obstacle.png" />
+<img src="./attachments/obstacle.png" height="300px"/>
 
 Let’s create a simple project where a buzzer produces a sound when an obstacle sensor detects an object. We will use GPIO 20 to control the buzzer and GPIO 4 to read the signal from the obstacle sensor.    
 
-<img src="./attachments/circuit3.png" />
+<img src="./attachments/circuit3.png" height="300px"/>
 
 Now let’s create the program. As before, we start by including the libraries our program needs. In the `app_main` function, we reset GPIO pins 4 and 20. Then, we configure GPIO 4 as an input and GPIO 20 as an output. We also set GPIO 4 to pull-down mode.
 
@@ -146,24 +146,24 @@ Next, we create an infinite loop where the program continuously runs. Inside thi
 
 void app_main(void){
 
-    gpio_reset_pin(4);
-    gpio_reset_pin(20);
+    gpio_reset_pin(4);
+    gpio_reset_pin(20);
 
-    gpio_set_direction(4, GPIO_MODE_INPUT);
-    gpio_set_direction(20, GPIO_MODE_OUTPUT);
+    gpio_set_direction(4, GPIO_MODE_INPUT);
+    gpio_set_direction(20, GPIO_MODE_OUTPUT);
 
-    gpio_set_pull_mode(4,GPIO_PULLDOWN_ONLY);
+    gpio_set_pull_mode(4,GPIO_PULLDOWN_ONLY);
 
-    while (1) {
-        if(gpio_get_level(4) == 0){
-            gpio_set_level(20, 1);
+    while (1) {
+        if(gpio_get_level(4) == 0){
+            gpio_set_level(20, 1);
 
-        } else{
-            gpio_set_level(20, 0);
+        } else{
+            gpio_set_level(20, 0);
 
-        }
-        vTaskDelay(200 / portTICK_PERIOD_MS);
-    }
+        }
+        vTaskDelay(200 / portTICK_PERIOD_MS);
+    }
 }
 ```
 #### Relays
@@ -173,7 +173,7 @@ However, when we want to build larger projects, we may need to control devices t
 
 To solve this problem, we use relays. A relay is an electrically controlled switch that allows a low-power, 3.3V signal from the ESP32-S3 to control high-power devices safely. Inside the relay, there is a coil that plays a key role. When the ESP32-S3 sends a control signal, a small current flows through the coil, which produces a magnetic field. This magnetic field pulls a metal armature, causing the internal switch to close and allowing current to flow in the high-power circuit. When the microcontroller stops sending the signal, the current in the coil stops, the magnetic field disappears, and a spring pushes the armature back to its original position, opening the switch again.
 
-<img src="./attachments/relay.png" />
+<img src="./attachments/relay.png" height="300px"/>
 
 Let’s build a simple project using a relay and an object sensor. In this project, we will use the obstacle sensor to turn a light ON when the user passes their hand in front of the sensor, and turn it OFF when the user passes their hand again.
 
@@ -195,7 +195,7 @@ Next, we connect the relay module, Make sure your relay module can be triggered 
 - Connect the other wire of the lamp back to the neutral.
 
 
-<img src="./attachments/circuit4.png" />
+<img src="./attachments/circuit4.png" height="300px"/>
 
 
 Now let’s create the C program for our project. 
@@ -209,22 +209,22 @@ bool lightState = false;
 void app_main(void){
 
     gpio_reset_pin(1);
-    gpio_reset_pin(10);
-    
+    gpio_reset_pin(10);
+    
 
-    gpio_set_direction(1, GPIO_MODE_OUTPUT); 
+    gpio_set_direction(1, GPIO_MODE_OUTPUT); 
     gpio_set_direction(10, GPIO_MODE_INPUT);  
 
-    gpio_set_pull_mode(10,GPIO_PULLDOWN_ONLY);
+    gpio_set_pull_mode(10,GPIO_PULLDOWN_ONLY);
 
-    while (1) {
-        if(gpio_get_level(10) == 0){
-            lightState ^=1;
-            gpio_set_level(1,lightState);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-        } 
-        
-    }
+    while (1) {
+        if(gpio_get_level(10) == 0){
+            lightState ^=1;
+            gpio_set_level(1,lightState);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+        } 
+        
+    }
 }
 ```
 #### Ultrasonic Sensor
@@ -234,7 +234,7 @@ The same idea applies when exploring a cave. An adventurer might shout and liste
 
 In a similar way, an ultrasonic sensor such as the HC-SR04 sends out high-frequency sound waves and measures how long it takes for the echo to return. Using this time, the ESP32-S3 calculates the distance to an object.
 
-<img src="./attachments/ultrasonic.png"/>
+<img src="./attachments/ultrasonic.png" height="300px"/>
 
 The HC-SR04 ultrasonic sensor has four pins: VCC and GND are used to power the sensor. The TRIG pin is used to send a short HIGH pulse (about 10 microseconds), which makes the sensor emit an ultrasonic sound wave. The ECHO pin then goes HIGH and stays HIGH until the reflected sound wave returns to the sensor. The duration of this HIGH signal represents the time taken for the sound to travel to an object and back.
 
@@ -262,7 +262,7 @@ To safely connect it, use a voltage divider:
 - One 220 Ω resistor
 - One 330 Ω resistor
 
-<img src="./attachments/circuit5.png" />
+<img src="./attachments/circuit5.png" height="300px"/>
 
 After finishing the circuit, it is time to write the program. We will use the `esp_timer_get_time()` function to measure microseconds.
 
@@ -329,7 +329,7 @@ Next, we enter an infinite loop. We begin by sending a short pulse from GPIO 20:
 Using this time difference, we calculate the duration of the echo pulse and then compute the distance based on the speed of sound. Finally, we use conditional statements to control three LEDs: one turns on if the object is far (≥ 60 cm), another for a medium distance (≥ 30 cm), and the last one for a short distance. A short delay is added at the end of each loop iteration before repeating the process.
 
 ### Pulse Width Modulation
-Pulse Width Modulation (PWM) is a technique used to simulate an analog output using a digital signal, The principle of PWM is based on switching the output signal ON and OFF repeatedly during a constant time period T.   
+Pulse Width Modulation (PWM) is a technique used to simulate an analog output using a digital signal, The principle of PWM is based on switching the output signal ON and OFF repeatedly during a constant time period T.   
 
 This fixed period T is called the PWM period, and within this period, the signal stays ON for a certain amount of time and OFF for the rest of the time, the percentage of time that the signal remains ON during one period is called the duty cycle.  
 
@@ -343,7 +343,7 @@ The output voltage is determined by the average value of the signal over one com
 V_{average}​=\frac{Ton}{T}​​×Vmax​=DutyCycle×Vmax​
 ```
 
-<img src="./attachments/PWM.png" />
+<img src="./attachments/PWM.png" height="300px"/>
 
 The ESP32-S3 features a highly flexible GPIO matrix. Unlike older microcontrollers that restrict PWM to specific hardware pins, the ESP32-S3 allows us to route PWM signals to all pins that can act as outputs using the LED Control (LEDC) peripheral. 
 
@@ -409,7 +409,7 @@ Not all GPIO pins are connected to the ADC. Only certain pins can be used to rea
 - **ADC1 pins (recommended): GPIO1 to GPIO10**
 - **ADC2 pins: GPIO11 to GPIO20** (these may conflict with Wi-Fi and are less reliable in that case)
 
-<img src="./attachments/esp32s3_analogue.png"/>
+<img src="./attachments/esp32s3_analogue.png" height="300px"/>
 
 ### Analog Sensors
 #### Potentiometers
@@ -422,7 +422,7 @@ When we turn the potentiometer, the voltage at the middle pin changes smoothly f
 
 Let’s build a project to control the brightness of an LED using a potentiometer. For this project, we will need a potentiometer, an LED, and a 220 Ω resistor. First, connect the potentiometer’s two outer terminals to GND and 3.3V. Then, connect the middle terminal to GPIO 1. Next, connect the short leg of the LED (cathode) to GND, and the long leg (anode) to GPIO 9 through the 220 Ω resistor.
 
-<img src="./attachments/circuit6.png" />
+<img src="./attachments/circuit6.png" height="300px"/>
 
 We start by including the libraries required for this project. Since our goal is to control the brightness of an LED, we will use PWM (Pulse Width Modulation). On the ESP32, PWM is handled by the LEDC driver, so we include the necessary headers for LED control, FreeRTOS timing, and ADC functionality. Because we also want to read an analog signal (for example, from a potentiometer), we include the ADC oneshot driver as well.
 ```c
@@ -524,11 +524,13 @@ V_{1}​=V_{in}​×\frac{R_1}{R_2​+R_2}​​
 ```math
 V_{2}​=V_{in}​×\frac{R_2}{R_2​+R_2}​​
 ```
-![[voltage_divider.png]]
+Here descriptive circuit:
+
+<img src="./attachments/voltage_divider.png" height="300px"/>
 
 Let’s build an automatic night light that turns on an LED when it gets dark. Connect one leg of the LDR to 3.3V. Connect the other leg to GPIO 1 (ADC1_CH0) and to one end of the 10k Ω resistor. Connect the other end of the 10k Ω resistor to GND. Finally, connect an LED to GPIO 9 through a 220 Ω resistor.
 
-<img src="./attachments/circuit7.png" />
+<img src="./attachments/circuit7.png" height="300px"/>
 
 
 Since we just need standard digital output for the LED, we will use the standard GPIO driver (`driver/gpio.h`).
@@ -573,13 +575,13 @@ Inside the main loop, we continuously read the light level and use a simple cond
 ```
 
 #### Flame Sensor
-The flame sensor detects fire by sensing infrared (IR) light emitted by flames,Since Flames emit radiation across visible and infrared wavelengths. The flame sensor is designed to detect infrared light, typically in the **760–1100 nm** range. Unlike an LDR circuit that usually requires an external voltage divider, the flame sensor module already includes the necessary resistors and signal conditioning circuitry. The module usually has four pins: VCC, GND, DO (Digital Output), and AO (Analog Output).
+The flame sensor detects fire by sensing infrared (IR) light emitted by flames,Since Flames emit radiation across visible and infrared wavelengths. The flame sensor is designed to detect infrared light, typically in the **760–1100 nm** range. Unlike an LDR circuit that usually requires an external voltage divider, the flame sensor module already includes the necessary resistors and signal conditioning circuitry. The module usually has four pins: VCC, GND, DO (Digital Output), and AO (Analog Output).
 - **DO pin:** Provides a HIGH or LOW signal to indicate whether a flame is detected, based on a built-in comparator threshold adjusted by a potentiometer on the module.    
 - **AO pin:** Outputs a continuous voltage depending on the intensity of the flame.
 
 The sensing element in the module is an infrared photodiode. When infrared radiation from a flame reaches the photodiode, it generates a small electrical signal. The strength of this signal depends on the intensity of the flame. This signal is sent to two different parts of the module:
 
-The **DO pin** provides a simple HIGH or LOW signal to indicate whether a flame is detected. Inside the module, there is a comparator circuit that compares the sensor signal with a reference voltage. This reference voltage can be adjusted using the built-in potentiometer. Turning the potentiometer clockwise makes the sensor more sensitive, allowing it to detect smaller or weaker flames. Turning it counterclockwise makes the sensor less sensitive, so it will only detect stronger or larger flames.
+The **DO pin** provides a simple HIGH or LOW signal to indicate whether a flame is detected. Inside the module, there is a comparator circuit that compares the sensor signal with a reference voltage. This reference voltage can be adjusted using the built-in potentiometer. Turning the potentiometer clockwise makes the sensor more sensitive, allowing it to detect smaller or weaker flames. Turning it counterclockwise makes the sensor less sensitive, so it will only detect stronger or larger flames.
 - The DO pin becomes LOW when a flame is detected.
 - The DO pin becomes HIGH when there is no flame.
 
@@ -588,11 +590,11 @@ The AO pin outputs a voltage that changes continuously depending on the intensit
 - If the flame is strong or closer, the output voltage is higher.
 
 
-<img src="./attachments/flame_sensor.png"/>
+<img src="./attachments/flame_sensor.png" height="300px" />
 
 Let’s build a project where a buzzer sounds when a flame is detected. Connect GND and VCC (3.3V) of the sensor to the ESP32-S3. Connect the AO pin to GPIO 1 (ADC1_CH0). Connect the positive pin of an active buzzer to GPIO 7, and its GND to the system ground.
 
-<img src="attachments/circuit8.png" />
+<img src="attachments/circuit8.png" height="300px"/>
 
 Now let’s create our program. We start by including the necessary libraries, then configure GPIO 7 as an output. The ADC is initialized the same way as before to read analog values from the flame sensor.
 
@@ -637,11 +639,17 @@ Soil moisture sensors measure the water level in soil. They fall into two main g
 - **Resistance-based:** Uses two exposed electrodes. As moisture increases, conductivity increases, lowering resistance.
 - **Capacitance-based:** Measures the dielectric permittivity of the soil. Less prone to corrosion.
 
-<img src="./attachments/soil_sensor.png"/>
+<img src="./attachments/soil_sensor.png" height="300px"/>
 
-The resistance-based sensor comes with a module that acts as an interface between the probe and the ESP32-S3. It typically has four pins: VCC, GND, AO (Analog Output), and DO (Digital Output). The AO pin provides a continuous analog voltage corresponding to the measured resistance.
-- When the soil is **very wet** we get low resistance, the sensor outputs a **lower voltage**.
-- When the soil becomes **drier** get High resistance, the sensor outputs a **higher voltage**.
+The capacitive sensor measures the dielectric properties of the soil. Because of this, it is less affected by corrosion and usually lasts longer, it has three pins: VCC, GND, and OUT, the output pin releases a voltage that changes depending on the soil moisture level:
+
+- When the soil is very wet, the sensor outputs a lower voltage.
+- When the soil becomes drier, the sensor outputs a higher voltage.
+
+
+The resistance-based sensor has two exposed electrodes that are inserted into the soil. When the soil contains more water, it becomes more conductive, which means the resistance between the electrodes decreases. When the soil is dry, the resistance increases, this type of sensor is the most common and inexpensive option. However, the probe itself usually has only two pins, so it cannot be connected directly to the Esp32s3. Instead, it requires an external module that processes the signal, the module acts as an interface between the probe and the ESP32s3, It typically has four pins: VCC, GND, AO (Analog Output), and DO (Digital Output). The AO pin provides a continuous analog voltage corresponding to the measured resistance.
+- When the soil is **very wet** we get low resistance, the sensor outputs a **lower voltage**.
+- When the soil becomes **drier** get High resistance, the sensor outputs a **higher voltage**.
 
 The DO pin outputs a digital signal (HIGH or LOW) based on a preset threshold, which can be adjusted using the onboard potentiometer; it goes HIGH when the measured value exceeds the set threshold and LOW otherwise.   
 
@@ -649,7 +657,7 @@ Let’s build an automated plant-watering system. We will need the sensor module
 
 Connect the AO pin of the moisture sensor to GPIO 1. Connect the IN pin of the relay to GPIO 8. Wire the high-voltage side with the 12V pump routing power through the relay's Normally Open (NO) and Common (COM) terminals.
 
-<img src="./attachments/circuit9.png"/>
+<img src="./attachments/circuit9.png" height="300px"/>
 
 Now let’s create our program. We start by importing the required libraries, then configure the ADC to read the soil moisture level and set GPIO 8 as a digital output to control the pump.
 
@@ -684,6 +692,349 @@ void app_main() {
             gpio_set_level(8, 0); 
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+```
+## Motors
+Motors are very important devices in mechatronic and robotic systems. They represent most of the actuators used in these systems. In a typical mechatronic system, sensors first collect information from the external environment. This information is then processed by a controller. After the decision is made, the controller sends commands to the actuators, and the motors perform the required movement or action.  
+Motors work by converting electrical energy into mechanical energy. This process is based on the interaction between magnetic fields and electric current, which produces motion in the motor’s rotor. Motors do not come in only one form. There are many different types of motors, each designed for specific applications depending on the required speed, precision, torque, and control.
+
+### DC Motor
+The standard Direct Current (DC) motor is the most common type of motor we will encounter. It provides continuous rotational motion.    
+A DC motor works on the principle of electromagnetism (Lorentz force principle). Inside the motor, there is a coil of wire (the armature) placed between the poles of a permanent magnet. When an electric current flows through the coil, it generates a magnetic field that pushes against the permanent magnet, causing the coil to spin. A mechanical component called a "commutator" constantly reverses the current direction to keep the motor spinning continuously in one direction. The speed of the motor depends on the supplied voltage, and the direction of rotation depends on the polarity of the voltage applied to the motor terminals.
+
+<img src="./attachments/dc_motor.png" height="300px"/>
+
+The Esp32s3 can only supply about 20 mA of current, which can't directly power most DC motors. to solve this we use a Motor Driver (like the L298N or L293D) or Transistor circuit.   
+
+The drivers is integrated circuit that contain an "H-Bridge" circuit, which allows us to safely provide high current from an external battery and easily reverse the motor's direction.
+
+<img src="./attachments/driver_dc.png" height="300px"/>
+
+
+Lets create simple project where we control DC motor with an L298N motor driver, First we connect the motor to the driver's output terminals. After that we connect the driver's power pins to a battery and ground. Then, connect the driver's control pins to the Esp32S3.
+- **IN1 and IN2** control the rotation direction. We set one **HIGH** and the other **LOW** to select the direction, we connect IN1 to GPIO 20 and IN2 to GPIO 19
+- **ENA** controls the motor speed using PWM, we use the GPIO 21 pin for that
+
+
+<img src="./attachments/motor_circuit.png" height="300px"/>
+
+For this program, we start by including the necessary libraries. Then we create and configure a PWM timer and attach it to pin 21 so we can control its signal. After that, we set up pins 19 and 20 as output pins. Once everything is ready, we enter an infinite loop where we alternate the states of these two pins while also changing the PWM duty cycle on pin 21. This allows the motor to rotate in one direction for one second at half speed, then switch to the opposite direction for one second at a quarter of its speed.
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/ledc.h"
+#include "driver/gpio.h"
+
+void app_main() {
+
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_LOW_SPEED_MODE,
+        .timer_num        = LEDC_TIMER_0,
+        .duty_resolution  = LEDC_TIMER_12_BIT, // 12-bit resolution
+        .freq_hz          = 5000, // 5 kHz
+        .clk_cfg          = LEDC_AUTO_CLK
+
+    };
+
+    ledc_timer_config(&ledc_timer);
+
+    ledc_channel_config_t ledc_channel = {
+
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = LEDC_CHANNEL_0,
+        .timer_sel      = LEDC_TIMER_0,
+        .gpio_num       = 21,
+        .duty           = 0,   
+        .hpoint         = 0
+
+    };
+    ledc_channel_config(&ledc_channel);
+    
+    gpio_reset_pin(19);
+    gpio_reset_pin(20);
+    gpio_set_direction(19, GPIO_MODE_OUTPUT);
+    gpio_set_direction(20, GPIO_MODE_OUTPUT);
+    gpio_set_level(19, 0);
+    gpio_set_level(20, 0);
+     
+    while (1) {
+        gpio_set_level(19,0);
+        gpio_set_level(20,1);
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 2047);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        gpio_set_level(19,1);
+        gpio_set_level(20,0);
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 1023);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+    }
+}
+```
+### Servo Motor
+A servo motor doesn't spin continuously like a regular DC motor. Instead, it is designed for precise positioning. Standard hobby servos can rotate to a specific angle, usually between 0 and 180 degrees. They are perfect for steering mechanisms, robotic arms, and camera gimbals.
+
+A servo is a "closed-loop" system. Inside its casing, there is a small DC motor, a gearbox to slow it down and increase torque, and a potentiometer (variable resistor) connected to the output shaft. As the motor turns, the potentiometer turns with it, constantly measuring the current angle and feeding that information back to an internal control circuit. The control circuit receives a PWM control signal and compares the desired position with the current position measured by the potentiometer. if the positions are different, the motor rotates until the correct angle is reached.
+
+<img src="./attachments/servo_motor.png" height="300px"/>
+
+A servo motor typically has three pins: GND, VCC, and a control pin. The control pin receives a PWM (Pulse Width Modulation) signal that determines the shaft position.
+
+The control signal is a PWM waveform with a frequency of 50 Hz, which corresponds to a period of 20 ms. The position of the servo is controlled by the width of the pulse within this period.
+
+For a standard servo motor:
+- A **1 ms** pulse rotates the shaft to approximately **−90°**
+- A **1.5 ms** pulse sets the shaft to **0° (center position)**
+- A **2 ms** pulse rotates the shaft to approximately **+90°**
+
+Since the relationship between pulse width and angle is approximately linear, we can express it as:
+```math
+Pms = 1.5 + \theta \times \frac{0.5}{90}​
+```
+where:
+- $P_{ms}$​ is the pulse width in milliseconds
+- $\theta$ is the angle in degrees (from −90° to +90°)
+
+If the PWM resolution is 4095 steps (e.g., a 12-bit timer), and the total period is 20 ms, the corresponding digital value for a given pulse width can be calculated as:
+```math
+N = \frac{4095}{20} \times P_{width}
+```
+where:
+- N is the digital count value to load into the PWM register
+- $P_{width}$ is the pulse width in milliseconds
+
+Let’s create a simple project where we rotate the servo to **90° for 1 second**, then to **−90° for 1 second**, repeatedly.  
+First, we start by building the circuit. Connect:   
+- **GND** of the servo to **GND** on the board
+- **VCC** of the servo to the **5V pin** on the ESP32-S3
+- The **control pin** of the servo to **GPIO 21**
+
+<img src="./attachments/servo_circuit.png" height="300px"/>
+
+Now, let’s create our program. First, we include the necessary libraries for FreeRTOS and the LEDC PWM driver. After that, we configure GPIO 21 to generate a PWM signal with a frequency of 50 Hz, which is required for controlling the servo motor.
+
+Inside the main loop, we alternate between two duty cycle values that correspond to **+90°** and **−90°**, holding each position for 1 second before switching.   
+We get the duty cycle values by using the mathematical relations we discussed earlier.
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/ledc.h"
+
+void app_main() {
+
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_LOW_SPEED_MODE,
+        .timer_num        = LEDC_TIMER_0,
+        .duty_resolution  = LEDC_TIMER_12_BIT, 
+        .freq_hz          = 50, // 5 kHz
+        .clk_cfg          = LEDC_AUTO_CLK
+    };
+
+    ledc_timer_config(&ledc_timer);
+
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = LEDC_CHANNEL_0,
+        .timer_sel      = LEDC_TIMER_0,
+        .gpio_num       = 21,
+        .duty           = 0,  
+        .hpoint         = 0
+    };
+
+    ledc_channel_config(&ledc_channel);
+
+    while (1) {
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 511);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 102);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+```
+
+### Brushless DC Motor (BLDC)
+A brushless motor, often called a BLDC motor, is designed for continuous rotation like a regular DC motor, but without the brushes found in traditional motors. Instead of mechanical commutation, it uses electronic commutation, making it more efficient, quieter, and longer-lasting. 
+
+In a standard DC motor, the permanent magnets are on the outside (stator) and the electromagnet coils spin on the inside (rotor). A BLDC motor flips this design: the coils remain stationary on the outside, and a permanent magnet spins on the inside.   
+
+Because there is no mechanical commutator to switch the current in the coils it relay on an Electronic Speed Controller ESC, the ESC rapidly switch the power to the coils in a precise sequence to drag the magnetic rotor around. This switching creates a rotating magnetic field that causes the rotor to spin.  
+The control signal represented as PWM signal which dictate how fast this sequence occurs. higher duty cycles increase speed, while lower duty cycles reduce it. 
+
+A BLDC motor typically has three input wires, which correspond to the three stator phases (often labeled A, B, and C). Each wire connects to one set of coils inside the motor.
+
+
+<img src="./attachments/bldc.png" height="300px"/>
+
+Let’s build a simple project to control a brushless motor using an ESP32s3. For this project, we need a BLDC motor, an Electronic Speed Controller (ESC) as the driver, and a suitable battery that can supply enough power to the motor.
+
+First, connect the GND and VCC (5V) wires from the ESC control cable to the ESP32S3 GND and 5V pins. Then connect the signal (control) wire from the ESC to GPIO 9,  which will send the PWM signal used to control the motor speed. Next, connect the battery to the ESC’s power input to supply the required power. Finally, connect the three wires of the brushless motor to the three output wires of the ESC. These wires correspond to the three motor phases and allow the ESC to drive the motor by switching the current between them.
+
+<img src="./attachments/bldc_circuit.png" height="350px"/>
+
+Just like a servo, the standard ESC control signal is a PWM waveform with a frequency of 50 Hz, which corresponds to a period of 20 ms. The speed of the motor is controlled by the width of the pulse within this period.
+
+For a standard ESC:
+- A **1 ms** pulse sets the motor to **0% throttle (stopped)**
+- A **1.5 ms** pulse sets the motor to **50% throttle**
+- A **2 ms** pulse sets the motor to **100% throttle (maximum speed)**
+
+Since the relationship between pulse width and throttle percentage is linear, we can express it as:
+
+```math
+P_{ms} = 1.0 + T \times \frac{1.0}{100}
+```
+
+where:
+
+- $P_{ms}$ is the pulse width in milliseconds
+    
+- $T$ is the throttle percentage (from 0 to 100)
+    
+
+If the PWM resolution is 4095 steps (e.g., a 12-bit timer), and the total period is 20 ms, the corresponding digital value for a given pulse width can be calculated exactly as it is for servos:
+
+```math
+N = \frac{4095}{20} \times P_{width}
+```
+
+where:
+- $N$ is the digital count value to load into the PWM register
+- $P_{width}$ is the pulse width in milliseconds
+    
+
+Now, let’s use the information above to create our program. First, we include the necessary libraries for FreeRTOS and the LEDC PWM driver. After that, we configure GPIO 9 to generate a PWM signal with a frequency of 50 Hz, which is required for standard ESCs.
+
+It is important to note that ESCs require an "arming sequence" for safety. When they first power on, they must receive a 0% throttle signal (1 ms pulse) for a few seconds before they will respond to speed commands. We handle this in `app_main` before the loop. Inside the main loop, we alternate between duty cycle values corresponding to 50% throttle and 0% throttle.
+
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/ledc.h"
+
+void app_main() {
+
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_LOW_SPEED_MODE,
+        .timer_num        = LEDC_TIMER_0,
+        .duty_resolution  = LEDC_TIMER_12_BIT, 
+        .freq_hz          = 50, // 50 Hz
+        .clk_cfg          = LEDC_AUTO_CLK
+    };
+
+    ledc_timer_config(&ledc_timer);
+
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = LEDC_CHANNEL_0,
+        .timer_sel      = LEDC_TIMER_0,
+        .gpio_num       = 9,
+        .duty           = 0,  
+        .hpoint         = 0
+    };
+
+    ledc_channel_config(&ledc_channel);
+
+    // ESC Arming Sequence
+    // Send a 1 ms pulse (~205 out of 4095) to arm the ESC
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 205);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
+    while (1) {
+        // 50% Throttle (1.5 ms pulse -> ~307 out of 4095)
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 307);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        vTaskDelay(pdMS_TO_TICKS(2000));
+
+        // 0% Throttle / Stop (1 ms pulse -> ~205 out of 4095)
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 205);
+        ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}
+```
+### Stepper Motor
+A stepper motor is a motor that rotates in small precise steps instead of continuous rotation, each electrical pulse moves the motor by a fixed angle. If a motor has a 1.8 degree step angle, it takes exactly 200 steps to make one full revolution. They are excellent for precise positioning without needing feedback, making them the backbone of 3D printers and CNC machines.  
+A stepper motor contains a central, toothed, gear-like magnetic rotor surrounded by multiple electromagnetic coils (stators) organized into "phases." By energizing these coils one by one in a specific sequence, the teeth of the rotor are magnetically pulled into alignment with the energized coil, causing the motor to step forward by a fraction of a degree.
+
+<img src="./attachments/stepper.png" height="450px"/>
+
+Stepper motors, like brushless motors, require specialized drivers to operate correctly. The driver acts as the “brain” between the control system (Esp32S3) and the motor itself. It receives control signals, usually in the form of step pulses and direction commands, and translates them into precise sequences of electrical signals that energize the motor coils in the proper order. The driver controls which coils are energized at each moment, ensuring the rotor moves incrementally and precisely to the desired position. Some drivers also provide features like current limiting, microstepping (dividing steps into smaller increments for smoother motion), and protection against overheating. Common stepper motor drivers include the A4988, DRV8825, and ULN2003
+
+<img src="./attachments/stepper_driver.png" height="350px"/>
+
+
+The A4988 driver has 16 pins, usually arranged in two rows: one for motor power and one for control logic. Here’s what each pin does:
+
+- **VMOT** Connects to the motor power supply (typically 8–35 V). Powers the stepper motor coils.
+- **GND (next to VMOT)** Connects to the negative terminal of the motor power supply.
+- **VDD** Connects to Arduino 5 V (logic power). Powers the internal logic circuits of the driver.
+- **GND (logic side)** Connects to Arduino GND. Must share a common ground with Arduino.
+- **A1 & A2** Connect to one coil of the stepper motor.
+- **B1 & B2** Connect to the other coil of the stepper motor.
+- **STEP** Pulse input. Each pulse moves the motor **one step**.
+- **DIR** Direction input. HIGH or LOW selects clockwise or counterclockwise rotation.
+- **ENABLE** LOW to enable the driver, HIGH to disable the output to the motors. Can be tied LOW if always enabled.
+- **RESET** Resets the driver logic. Usually tied HIGH if not used.
+- **SLEEP** Puts the driver into low-power sleep mode. Connect HIGH to wake the driver.
+- **MS1, MS2, MS3** Control microstepping resolution.
+
+|MS1|MS2|MS3|Microstep Mode|
+|---|---|---|---|
+|LOW|LOW|LOW|Full step|
+|HIGH|LOW|LOW|Half step|
+|LOW|HIGH|LOW|Quarter step|
+|HIGH|HIGH|LOW|Eighth step|
+|HIGH|HIGH|HIGH|Sixteenth step|
+
+
+Let’s make a simple example using a 12 V stepper motor and a stepper motor driver A4988. We start by connecting the stepper motor coil 1 to the A1 & B1 pins on the driver and coil 2 to the B1 & B2 pins. Next, we connect VMOT to the 12 V battery positive terminal and GND to the battery negative terminal.  
+After that, we start connecting the driver to the Esp32s3. We connect the GND pin at the bottom of the driver to the Esp32s3 GND, the VDD to Esp32s3 5V, and finally we connect the DIR pin and the STEP pin to the ESp32S3 pins 19 and 20.
+
+<img src="./attachments/stepper_circuit.png" />
+
+The control signals are primarily represented as a `STEP` pulse and a logic level for `DIR` (Direction). A single pulse on the `STEP` pin moves the motor one step, and the frequency of these pulses dictates the speed higher frequencies increase speed, while lower frequencies reduce it.
+
+
+Let’s create simple program to make the motor move 100 step in direction wait 3 seconds then move 100 step in the opposite direction. First, we include the required libraries. Then, we configure GPIO 19 and GPIO 20 as output pins. GPIO 19 is used to control the motor’s direction, while GPIO 20 is used to generate the step signal.
+
+In the program, we initially set GPIO 19 to a low level to select one direction, and then move the motor by generating 100 step pulses using GPIO 20. After a short delay, we change GPIO 19 to a high level to reverse the motor’s direction, and again send 100 step pulses. This sequence repeats continuously, causing the motor to alternate between forward and reverse motion.
+
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+
+void app_main() {
+
+    gpio_reset_pin(20);
+    gpio_reset_pin(19);
+    gpio_set_direction(20, GPIO_MODE_OUTPUT);
+    gpio_set_direction(19, GPIO_MODE_OUTPUT);
+
+    while (1) {
+        gpio_set_level(19, 0);
+        for (int i=0;i<100;i++){
+          gpio_set_level(20, 1);
+          vTaskDelay(pdMS_TO_TICKS(50));
+          gpio_set_level(20, 0);
+          vTaskDelay(pdMS_TO_TICKS(50));
+        }
+        vTaskDelay(pdMS_TO_TICKS(3000));
+        gpio_set_level(19, 1);
+        for (int i=0;i<100;i++){
+          gpio_set_level(20, 1);
+          vTaskDelay(pdMS_TO_TICKS(50));
+          gpio_set_level(20, 0);
+          vTaskDelay(pdMS_TO_TICKS(50));
+        }
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 ```
