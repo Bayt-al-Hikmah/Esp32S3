@@ -1,6 +1,5 @@
 ## Objectives
 - Working with Display Devices
-- Connectivity and Communication in Esp32s3
 ## Display Devices
 When working on embedded system projects, we often need a way to see what is happening inside our microcontroller.    
 This is where display devices come in. Display devices are essential output components that allow the microcontroller to communicate directly with the external world. They help us retrieve information, display sensor data, show alerts, and create user interfaces. Instead of just turning on a single LED to indicate a state, displays allow us to show numbers, text, and even complex graphics.
@@ -419,9 +418,10 @@ Inside the LCD module, there are several layers:
 1. Two polarizing filters
 2. A layer of liquid crystals
 3. Glass plates with transparent electrodes
-4. A backlighz
+4. A backlight
 
 <img src="./attachments/lcd.png" height="350px"/>
+
 Unlike LED displays, LCD pixels do not emit light themselves. Instead, they act as tiny shutters that control how light passes through the screen.When the internal controller applies a voltage to specific pixel areas, the liquid crystals physically twist. This twisting changes the polarization of the light. While light passes through the crystals naturally when no electricity is applied, the twisted crystals cause the second (front) polarizing filter to block the light. As a result, the pixel appears dark, while the surrounding areas remain bright. This blocked light creates the dark "pixels" that form our letters, numbers, and symbols.      
 There is multiple modules of LCD but the most common modules available in the market are:
 - **16 × 2 LCD** Displays 16 characters per row and 2 rows.
