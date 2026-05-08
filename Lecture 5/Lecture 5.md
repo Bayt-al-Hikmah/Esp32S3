@@ -198,7 +198,7 @@ The UART protocol works perfectly, but it has a small limitation: it is a point-
 The two communication lines used in the I2C protocol are:
 - **SDA (Serial Data Line)** used to transfer data between devices
 - **SCL (Serial Clock Line)** used to synchronize the communication using a clock signal
-#### UART Connection
+#### I2C Connection
 The protocol is synchronous, which means communication is coordinated using a shared clock signal. In an I²C network, one device acts as the master and controls the communication, while one or more slave devices respond to the master. Each slave device has a unique address, allowing multiple devices to operate on the same bus without requiring separate communication lines.
 
 - The master device controls the communication and generates the clock signal on the SCL line.
@@ -413,5 +413,213 @@ Finally, we create a buffer to store the received data. Inside the infinite `whi
 		}       
 		vTaskDelay(pdMS_TO_TICKS(100));    
 	}
+}
+```
+### SPI Protocol
+The I²C protocol solves the problem of connecting multiple devices using only two wires, but it has a small limitation: it uses a single data line for both sending and receiving, it operates in half-duplex mode it cannot send and receive data at the same time, sharing a bus with many devices requires addressing which adds overhead.To achieve faster and simpler communication, another protocol is commonly used: **SPI**.
+
+
+**SPI**, which stands for Serial Peripheral Interface, is a synchronous serial communication protocol that allows devices to communicate at very high speeds in full-duplex mode.
+
+Instead of just two wires, SPI typically uses four communication lines:
+- **MOSI (Master Out Slave In)** used to send data from the master to the slave
+- **MISO (Master In Slave Out)** used to send data from the slave to the maste
+- **SCLK (Serial Clock)** used to synchronize the communication using a clock signal
+- **CS (Chip Select) / SS (Slave Select)** used by the master to select a specific slave device
+    
+#### SPI Connection
+The protocol is synchronous, which means communication is coordinated using a shared clock signal. In an SPI network, one device acts as the master and controls the communication, while one or more slave devices respond to the master. Unlike I2C, SPI does not use addresses. Instead, the master uses a dedicated Chip Select (CS) line for each slave to choose which device to communicate with.
+- The master device controls the communication, generates the clock signal on the SCLK line, and manages the CS lines.
+- The slave devices listen to the MOSI line and send data back on the MISO line when their specific CS line is activated.
+
+When connecting devices on an SPI bus, the MOSI, MISO, and SCLK lines are shared among all devices. However, every slave device requires its own separate CS line connected to the master. SPI uses push-pull drivers, meaning the lines are actively driven both HIGH and LOW, which allows for much higher speeds without needing the external pull-up resistors required by I2C.
+
+<img src="./attachments/spi_linking.png" />
+
+#### SPI Working Principle
+To work with the SPI protocol, all connected devices must share the common bus lines (MOSI, MISO, SCLK), and the master must have a separate CS line for every slave. Communication is always initiated and controlled by a master device.
+
+When the bus is idle, the SCLK line rests (HIGH or LOW depending on the configured mode), and the CS lines are kept HIGH to keep the slave devices inactive.
+
+To begin communication, the master pull the CS line of the target slave LOW. This signals the specific device that a transmission is starting.
+
+Next, the master starts generating the clock pulses on the SCLK line. For every clock cycle, one bit of data is pushed out on the MOSI line by the master, and one bit is pushed out on the MISO line by the slave. Because of the shift-register architecture, data is always exchanged.
+
+When the communication is finished, the master stops the clock signal and pulls the CS line back HIGH. This releases the slave and returns the bus to the idle state.
+
+<img src="./attachments/spi_signal.png" />
+
+#### Using SPI protocol Esp32
+The ESP32-S3 includes four SPI controllers.
+- **SPI0** and **SPI1** are mainly reserved for internal communication with external flash memory and PSRAM.
+- **SPI2** and **SPI3** are available for general-purpose applications.
+
+Each SPI controller can operate independently in one of two modes:
+- **Master mode**: the ESP32-S3 controls communication, generates the serial clock (**SCLK**), and manages the chip-select (**CS**) signal.
+- **Slave mode**: the ESP32-S3 responds to transactions initiated by an external SPI master.
+
+SPI2 and SPI3 can be routed to almost any available GPIO pins through the ESP32-S3 GPIO matrix, providing flexible pin assignment for SPI signals such as MOSI, MISO, SCLK, and CS.
+
+#### Programming the SPI Interface
+Now that we understand the working principle of the SPI protocol, let’s build the previous example using SPI communication. In this project, two ESP32-S3 boards will communicate through the SPI bus. The first ESP32-S3 will act as the SPI master, while the second ESP32-S3 will act as the SPI slave.
+
+Just like before, the first ESP32-S3 has a push button connected to it. When the button is pressed, the master board sends either `"ON"` or `"OFF"` to the second ESP32-S3 using the SPI protocol. The slave ESP32-S3 then receives the message and turns an LED on or off accordingly.
+
+To build the circuit, both ESP32-S3 boards must share the MOSI, MISO, SCLK, and CS lines. In this example, we will use:
+- **GPIO 11** as MOSI
+- **GPIO 12** as MISO
+- **GPIO 13** as SCLK
+- **GPIO 10** as CS
+    
+Finally we connect GPIO 1 pin of the master ESP32-S3 to the push button, and GPIO 1 pin of the slave ESP32-S3 to the LED.
+
+<img src="./attachmentscircuit_spi.png" />
+
+
+After building the circuit, we can begin writing the program for the first ESP32-S3, which will operate as the SPI master.
+
+First, we include the required libraries and define the SPI configuration constants.
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/spi_master.h"
+#include "driver/gpio.h"
+#include <string.h>
+#include <stdbool.h>
+
+#define SPI_MASTER_MOSI_IO 11
+#define SPI_MASTER_MISO_IO 12
+#define SPI_MASTER_SCLK_IO 13
+#define SPI_MASTER_CS_IO 10
+#define SPI_HOST SPI2_HOST
+```
+Inside the `app_main()` function, we first configure GPIO 1 as an input pin connected to the push button. We also enable the internal pull-down resistor to avoid floating signals. Then, we create a boolean variable called `ledState` to store the current LED state that will later be sent to the slave ESP32-S3.
+```c
+void app_main(void) {
+    gpio_set_direction(1, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(1, GPIO_PULLDOWN_ONLY);    
+    bool ledState = false;
+```
+Next, we configure the SPI bus using the `spi_bus_config_t` structure. In this structure, we assign the MOSI, MISO, and SCLK pins, and define the maximum transfer size.
+```c
+    spi_bus_config_t buscfg = {
+        .mosi_io_num = SPI_MASTER_MOSI_IO,
+        .miso_io_num = SPI_MASTER_MISO_IO,
+        .sclk_io_num = SPI_MASTER_SCLK_IO,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = 32,
+    };
+```
+After creating the bus configuration, we install the SPI master bus using the `spi_bus_initialize()` function.
+```c
+    spi_bus_initialize(SPI_HOST, &buscfg, SPI_DMA_CH_AUTO);
+```
+
+Next, we configure the slave device parameters using the `spi_device_interface_config_t` structure. Here, we specify the clock speed (1 MHz) `clock_speed_hz`, the SPI mode `mode`, and assign the CS pin, `spics_io_num`. finally we set the transaction queue size. This sets how many transactions can be 'in the air'  at the same time.
+
+Then, we add the slave device to the SPI bus using `spi_bus_add_device()`.
+```c
+    spi_device_interface_config_t devcfg = {
+        .clock_speed_hz = 1000000,           
+        .mode = 0,                           
+        .spics_io_num = SPI_MASTER_CS_IO,    
+        .queue_size = 1,
+    };
+    
+    spi_device_handle_t spi_handle;
+    spi_bus_add_device(SPI_HOST, &devcfg, &spi_handle);
+```
+With the SPI configuration completed, we can now start sending data to the second ESP32-S3.
+
+Inside the infinite `while` loop, the program continuously checks if the push button is pressed. When the button is pressed, we toggle the value of `ledState`.
+
+To send data, we use an `spi_transaction_t` structure. We define the length of our transaction in bits and assign the data to the transmit buffer, then send it using `spi_device_transmit()`.
+```c
+    while (1) {        
+        if (gpio_get_level(1)) {            
+            ledState ^= 1;        
+        }        
+        
+        spi_transaction_t t;
+        memset(&t, 0, sizeof(t));
+        t.length = 8 * 4; // 4 bytes 
+        
+        if (ledState) {            
+            t.tx_buffer = "ON\0\0";        
+        } else {            
+            t.tx_buffer = "OFF\0";        
+        } 
+        
+        spi_device_transmit(spi_handle, &t);
+        vTaskDelay(pdMS_TO_TICKS(1000));    
+    }
+}
+```
+We have now completed the program for the first ESP32-S3. Now, we will create the program for the second ESP32-S3, which will operate as the SPI slave and control the LED based on the received data.
+
+Just like before, we begin by including the required libraries and defining the SPI configuration parameters.
+```c
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/spi_slave.h"
+#include "driver/gpio.h"
+#include <string.h>
+
+#define SPI_SLAVE_MOSI_IO 11
+#define SPI_SLAVE_MISO_IO 12
+#define SPI_SLAVE_SCLK_IO 13
+#define SPI_SLAVE_CS_IO 10
+#define SPI_HOST SPI2_HOST
+```
+Inside the `app_main()` function, we first configure GPIO 1 as an output pin because it is connected to the LED.
+```c
+void app_main(void) {    
+    gpio_set_direction(1, GPIO_MODE_OUTPUT);
+```
+Next, we configure the SPI bus and the SPI slave interface. We use the same `spi_bus_config_t` structure to assign the pins, and then use `spi_slave_interface_config_t` to configure the slave mode and the CS pin.
+```c
+    spi_bus_config_t buscfg = {
+        .mosi_io_num = SPI_SLAVE_MOSI_IO,
+        .miso_io_num = SPI_SLAVE_MISO_IO,
+        .sclk_io_num = SPI_SLAVE_SCLK_IO,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+    };
+
+    spi_slave_interface_config_t slvcfg = {
+        .mode = 0,
+        .spics_io_num = SPI_SLAVE_CS_IO,
+        .queue_size = 3,
+        .flags = 0,
+    };
+```
+After configuring the settings, we initialize the SPI slave device using the `spi_slave_initialize()` function.
+```c
+    spi_slave_initialize(SPI_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
+```
+
+Finally, we create a buffer to store the data we will receive from the SPI master. We also create a transaction structure, set the data length, and provide a pointer to the buffer where the received data will be stored. Inside the infinite loop, we prepare the transaction and pass it to the SPI driver using `spi_slave_transmit()`.
+
+The `spi_slave_transmit()` function blocks and waits passively until the SPI master sends data. After receiving the data, we check the received command and turn the LED on or off depending on whether the master ESP32-S3 sent `"ON"` or `"OFF"`.
+```c
+    char recvbuf[4] = {0};
+    spi_slave_transaction_t t;
+    memset(&t, 0, sizeof(t));
+    
+    t.length = 8 * 4; // 4 bytes
+    t.rx_buffer = recvbuf;
+
+    while (1) {        
+        
+        spi_slave_transmit(SPI_HOST, &t, portMAX_DELAY);
+        
+        if (recvbuf[0] == 'O' && recvbuf[1] == 'N') {            
+            gpio_set_level(1, 1);        
+        } else if (recvbuf[0] == 'O' && recvbuf[1] == 'F' && recvbuf[2] == 'F') {
+            gpio_set_level(1, 0);       
+        }       
+        vTaskDelay(pdMS_TO_TICKS(100));    
+    }
 }
 ```
