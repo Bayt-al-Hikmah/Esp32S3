@@ -473,7 +473,7 @@ To build the circuit, both ESP32-S3 boards must share the MOSI, MISO, SCLK, and 
     
 Finally we connect GPIO 1 pin of the master ESP32-S3 to the push button, and GPIO 1 pin of the slave ESP32-S3 to the LED.
 
-<img src="./attachmentscircuit_spi.png" />
+<img src="./attachments/circuit_spi.png" />
 
 
 After building the circuit, we can begin writing the program for the first ESP32-S3, which will operate as the SPI master.
