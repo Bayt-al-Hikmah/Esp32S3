@@ -1,18 +1,16 @@
 ## Objectives
 - Exploring Real-Time Operating Systems (RTOS)
-- Understanding FreeRTOS Tasks and Scheduling
-- Managing Inter-Task Communication with Queues
-- Protecting Shared Resources with Mutexes and Semaphores
+- Exploring Memory Structure, Usage, and Manipulation on the ESP32-S3
 ## Real-Time Operating Systems (RTOS)
-When building simple embedded projects, we usually write our code inside a single infinite loop, often called a "Super Loop" or "Bare-Metal" programming. In this approach, the microcontroller executes one instruction after another. If a specific function takes a long time to complete or if we use a blocking function the entire processor stops, and no other code can run until that function finishes.   
-As embedded systems become more complex, combining Wi-Fi, sensor reading, display updates, and user input, the Super Loop approach falls apart. The system becomes unresponsive and difficult to manage.  
-To overcome this limitation, a Real-Time Operating System (RTOS) is used. An RTOS acts as a highly efficient manager for the microcontroller. Instead of one massive loop, we break our program down into smaller, independent mini-programs called Tasks. The RTOS rapidly switches the processor's attention between these tasks based on timing and priority. This rapid switching creates the illusion that multiple tasks are running simultaneously, making the system highly responsive and deterministic.
+When building simple embedded projects, we usually write our code inside a single infinite loop, often called a "Super Loop" or "Bare-Metal" programming. In this approach, the microcontroller executes one instruction after another. If a specific function takes a long time to complete or if we use a blocking function, the entire processor stops, and no other code can run until that function finishes.    
+As embedded systems become more complex by combining Wi-Fi, sensor reading, display updates, and user input, the Super Loop approach begins to becomes inefficient. The system becomes unresponsive and difficult to manage.  
+To overcome this limitation, a Real-Time Operating System (RTOS) is used. An RTOS acts as a highly efficient manager for the microcontroller. Instead of one massive loop, we break our program down into smaller, independent programs called tasks. The RTOS rapidly switches the processor's attention between these tasks based on timing and priority. This rapid switching creates the illusion of simultaneous execution, making the system highly responsive and deterministic.
 ### FreeRTOS and the ESP32-S3
-The ESP-IDF framework uses FreeRTOS as its core operating system. FreeRTOS is the industry standard for embedded systems. However, standard FreeRTOS is designed for single-core processors. Because the ESP32-S3 has a dual-core processor, Espressif heavily modified FreeRTOS to support SMP (Symmetric Multiprocessing).
+The ESP-IDF framework uses FreeRTOS as its core operating system. FreeRTOS is the industry standard for embedded systems. However, traditional FreeRTOS deployments are commonly single-core. Because the ESP32-S3 has a dual-core processor, Espressif heavily modified FreeRTOS to support SMP (Symmetric Multiprocessing).
 
-This means the ESP-IDF version of FreeRTOS allows us to not only split our program into tasks but also explicitly dictate whether a task runs on Core 0 usually reserved for Wi-Fi/Bluetooth protocols or Core 1 usually reserved for application code.
+This means the ESP-IDF version of FreeRTOS allows us to not only split our program into tasks but also explicitly dictate whether a task runs on Core 0, which is commonly used by system and communication tasks such as Wi-Fi/Bluetooth or Core 1 which is reserved for application code.
 ### Scheduler Behavior
-At the center of FreeRTOS lies the scheduler, the component responsible for deciding which task gets access to the CPU at any given moment. The scheduler operates using a periodic signal known as the tick interrupt. A hardware timer inside the microcontroller generates this interrupt at a fixed frequency commonly every 1 millisecond (1 kHz) in ESP-IDF systems. Each time this interrupt occurs, FreeRTOS briefly pauses normal execution and reevaluates the state of all tasks in the system.
+At the center of FreeRTOS lies the scheduler, the component responsible for deciding which task gets access to the CPU at any given moment. The scheduler operates using a periodic signal known as the tick interrupt. A hardware timer inside the microcontroller generates this interrupt at a fixed frequency, commonly every 1 millisecond (1 kHz) in ESP-IDF systems. Each time this interrupt occurs, FreeRTOS briefly pauses normal execution and reevaluates the state of all tasks in the system.
 
 This periodic reevaluation is what gives FreeRTOS its “real-time” behavior. Instead of allowing a single program flow to run endlessly, the operating system constantly checks whether another task should take control of the processor. Tasks can be in different states such as _Running_, _Ready_, _Blocked_, or _Suspended_. The scheduler’s job is to examine these states and choose the highest-priority task that is ready to execute.
 
@@ -20,19 +18,19 @@ FreeRTOS uses a preemptive scheduling model, which means that task priority dire
 
 The scheduler also manages situations where multiple tasks share the same priority level. In this case, FreeRTOS typically uses a technique called **time slicing**. Rather than allowing one task to monopolize the CPU, the scheduler divides processor time into small slices based on the system tick. One task may run for a single tick, after which another task of equal priority gets a turn. This alternating pattern continues as long as both tasks remain ready to run. 
 
-An important detail is that context switching the act of stopping one task and starting another happens very quickly. FreeRTOS saves the current task’s execution context, including CPU registers and stack information, before restoring the context of the next task. Because this process is lightweight, the operating system can switch between tasks rapidly enough that multitasking appears simultaneous, even on a single-core processor.
+An important detail is that context switching happens very quickly. FreeRTOS saves the current task’s execution context, including CPU registers and stack information, before restoring the context of the next task. Because this process is lightweight, the operating system can switch between tasks rapidly enough that multitasking appears simultaneous, even on a single-core processor.
 ### Tasks
 A task is the most fundamental building block of FreeRTOS. We can think of a task as an independent program with its own infinite loop, its own priority, and its own allocated memory (called a stack).
 
-Tasks in FreeRTOS operate in different states
+Tasks in FreeRTOS operate in different states:
 - **Running:** The task is currently executing on the CPU core.
 - **Ready:** The task is ready to run but is waiting because a higher-priority task is currently using the CPU.
 - **Blocked:** The task is waiting for something to happen (like a timer to expire, or waiting for data from a sensor). While blocked, it consumes **zero** CPU time.
 - **Suspended:** The task is explicitly paused by the programmer and will not run again until explicitly resumed.
 #### Task Priorities
-Every task is assigned a priority from `0` to `configMAX_PRIORITIES - 1` in ESP-IDF, the max is usually 24. Higher numbers represent higher priority. The FreeRTOS scheduler strictly obeys priority: it will always pause a lower-priority task if a higher-priority task is Ready to run.
+Every task is assigned a priority from 0 to ``configMAX_PRIORITIES - 1``. In ESP-IDF, the maximum value is usually 24. Higher numbers represent higher priority. The FreeRTOS scheduler strictly obeys priority: it will always pause a lower-priority task if a higher-priority task is ready to run.
 #### Programming Tasks in ESP-IDF
-Let’s build a simple project to demonstrate tasks. We want to blink two LEDs at completely different frequencies. We can do it using a super loop with delays, and it works, but this approach produces blocking code. If the frequencies are unrelated, we may run into problems. With FreeRTOS, we can assign each LED its own individual task.
+Let’s build a simple project to demonstrate tasks. We want to blink two LEDs at completely different frequencies. We can implement this using a super loop with delays, and it works, but this approach produces blocking code. If the frequencies are unrelated, we may run into problems. With FreeRTOS, we can assign each LED its own individual task.
 
 First, we define our task functions. Every task in FreeRTOS must return `void`, take a `void *` parameter, and contain an infinite loop. Crucially, we must use `vTaskDelay()` instead of a standard delay. `vTaskDelay()` puts the task into the **Blocked** state, freeing up the CPU core to run other tasks.
 ```c
@@ -70,10 +68,10 @@ void blink_task_2(void *pvParameters) {
 Now, inside `app_main()`, we create these tasks using `xTaskCreatePinnedToCore`. This function requires:
 1. The function name of the task.
 2. A human-readable string name for debugging.
-3. The stack size in bytes how much memory the task needs.
-4. Parameters to pass to the task we pass `NULL`.
-5. The priority level we use `1` for both.
-6. A task handle we pass `NULL` as we don't need to reference it later.
+3. The stack size in bytes, which determines how much memory the task needs.
+4. Parameters to pass to the task; here, we pass ``NULL``.
+5. The priority level; we use ``1`` for both tasks.
+6. A task handle; we pass ``NULL`` because we do not need to reference it later..
 7. The core ID `0` or `1`, or `tskNO_AFFINITY` to let the RTOS choose.
 
 ```c
@@ -86,7 +84,7 @@ void app_main(void) {
 }
 ```
 #### Task Management: Suspend, Resume, and Delete
-We can do more then just creating and running tasks, we can also controll their states and lifecycle. To do this, we need to capture the Task Handle when we create it.
+We can do more than just create and run tasks. We can also control their states and lifecycle. To do this, we need to capture the Task Handle when we create it.
 - **`vTaskSuspend(TaskHandle_t xTaskToSuspend)`**: Pauses a task. It goes into the Suspended state and ignores all RTOS events until resumed.
 - **`vTaskResume(TaskHandle_t xTaskToResume)`**: Brings a task out of the Suspended state and back to Ready.
 - **`vTaskDelete(TaskHandle_t xTaskToDelete)`**: Completely destroys a task and frees its allocated stack memory. (To "restart" a task, you must delete it and call `xTaskCreate` again).
@@ -118,9 +116,9 @@ To solve this, FreeRTOS provides Queues. A Queue is a safe, First-In-First-Out (
 #### Programming Queues
 To work with queues, we first need to create a global variable of type `QueueHandle_t`. After that, we can manipulate the queue using three main functions:
 
-- `xQueueCreate()` Creates a queue object. It takes two arguments: the length of the queue (the maximum number of elements it can hold) and the size of each element stored in the queue.
-- `xQueueSend()` Sends new data to the queue. It takes three arguments: the global queue variable, the data being added, and the timeout value that specifies how long the function should wait if the queue is full.
-- `xQueueReceive()` Reads and retrieves data from the queue. Like the previous function, it takes three arguments: the queue handle, a pointer to where the received data should be stored, and the timeout value that specifies how long the function should wait for data.
+- `xQueueCreate()` creates a queue object. It takes two arguments: the length of the queue (the maximum number of elements it can hold) and the size of each element stored in the queue.
+- `xQueueSend()` sends new data to the queue. It takes three arguments: the global queue variable, the data being added, and the timeout value that specifies how long the function should wait if the queue is full.
+- `xQueueReceive()` reads and retrieves data from the queue. Like the previous function, it takes three arguments: the queue handle, a pointer to where the received data should be stored, and the timeout value that specifies how long the function should wait for data.
 
 Let’s recreate the automated lighting system that we built in Lecture 3 using queues and tasks. First, we make our circuit.
 
@@ -254,31 +252,30 @@ void app_main(void) {    // Create the mutex
 	}
 }
 ```
-Without the mutex, both tasks may try to use `printf()` at the same time, causing corrupted or mixed terminal output. By protecting the terminal with a mutex, only one task can access it at a time, This more powerfull when working with variables and data.
+Without the mutex, both tasks may try to use `printf()` at the same time, causing corrupted or mixed terminal output. By protecting the terminal with a mutex, only one task can access it at a time. This becomes more powerful when working with variables and data.
 #### Priority Inversion
 A common RTOS issue when using mutexes is **priority inversion**. It occurs when three tasks with different priorities interact:
 - A **Low-priority** task acquires a mutex.
 - A **High-priority** task later needs the same mutex, so it becomes blocked while waiting for it.
 - Meanwhile, a **Medium-priority** task becomes ready to run.
 
-Because the Medium-priority task has a higher priority than the Low-priority task, it preempts the Low-priority task and takes the CPU. The result is that the High-priority task remains blocked, waiting for the mutex, while the Low-priority task cannot run long enough to release it.
+Because the Medium-priority task has a higher priority than the low-priority task, it preempts the low-priority task and takes the CPU. The result is that the High-priority task remains blocked, waiting for the mutex, while the low-priority task cannot run long enough to release it.
 
 In other words, the High-priority task is indirectly delayed by the Medium-priority task, even though the Medium-priority task does not use the mutex at all.
 
 This kind of bug can be extremely difficult to debug and may cause serious timing problems in real-time systems.
 
-To solve this problem, FreeRTOS mutexes implement priority inheritance. When a High-priority task blocks while waiting for a mutex owned by a Low-priority task, the RTOS temporarily boosts the Low-priority task to the High task’s priority level. This allows the Low-priority task to run immediately, finish its critical section, release the mutex, and then return to its original priority.
+To solve this problem, FreeRTOS mutexes implement priority inheritance. When a High-priority task blocks while waiting for a mutex owned by a low-priority task, the RTOS temporarily boosts the low-priority task to the High task’s priority level. This allows the low-priority task to run immediately, finish its critical section, release the mutex, and then return to its original priority.
 
 ### Signaling and Synchronization: Binary Semaphores
-While Mutexes are designed for resource protection (locking a door), A binary semaphore, on the other hand, is mainly used for signaling and synchronization between tasks or between an interrupt and a task. Unlike a mutex, it is not about ownership of a resource, but about notifying that an event has occurred. It behaves like a simple flag that can be either “available” (1) or “not available” (0). One part of the system “gives” the semaphore to send a signal, and another part “takes” it to wait for that signal.  
+While mutexes are designed for resource protection (locking a door), a binary semaphore is mainly used for signaling,and synchronization between tasks or between an interrupt and a task. Unlike a mutex, it is not about ownership of a resource, but about notifying that an event has occurred. It behaves like a simple flag that can be either “available” (1) or “not available” (0). One part of the system “gives” the semaphore to send a signal, and another part “takes” it to wait for that signal.  
 
 Binary semaphores are most commonly used to handle Interrupt Service Routines (ISRs). In embedded systems, we want our ISRs to be as fast as possible. If a button is pressed or a packet arrives, we shouldn't do heavy processing inside the interrupt itself, as this blocks the entire processor.
 
-Instead, we use a technique called Deferred Interrupt Processing:
+Instead, we use a technique called deferred interrupt processing:
 1. The hardware triggers an Interrupt.
 2. The ISR does the bare minimum and "Gives" a Binary Semaphore.
 3. A Task that was "Taking" that semaphore wakes up and performs the heavy work.
-
 
 #### Programming Binary Semaphores
 To use a binary semaphore, we use the following functions:
@@ -286,7 +283,6 @@ To use a binary semaphore, we use the following functions:
 
 - **`xSemaphoreGiveFromISR()`**: This function sends a signal from within an Interrupt Service Routine (ISR), Its role is simply to notify the system that an event has occurred, without doing any heavy processing.
 - **`xSemaphoreTake()`**: Used by the task to wait for the signal, A task calling this function will enter a blocked state until the semaphore is given. Once the ISR (or another task) issues the signal, the waiting task is immediately unblocked and resumes execution to handle the event.
-
 
 
 Let’s see how these functions work by creating a simple project that toggles an LED when the BOOT button is pressed.
@@ -303,10 +299,18 @@ We start by including the required libraries and defining our constants. And dec
 
 SemaphoreHandle_t xGuiSemaphore;
 ```
-After that, we define the Interrupt Service Routine (ISR), which is the function executed automatically when the button is pressed. This function is placed in IRAM (`IRAM_ATTR`) to ensure it runs quickly and reliably during an interrupt.
+After that, we define the Interrupt Service Routine (ISR), which executes automatically whenever the button interrupt occurs. The function is placed in IRAM using ``IRAM_ATTR`` so it can execute quickly and reliably during interrupts.
+
+Inside the ISR, we declare a variable named ``xHigherPriorityTaskWoken`` and initialize it to ``pdFALSE``. This variable is used by FreeRTOS to indicate whether giving the semaphore caused a higher-priority task to leave the Blocked state and become ready to run.
+
+The function ``xSemaphoreGiveFromISR()`` gives the semaphore in an ISR-safe manner. If a higher-priority task was waiting for this semaphore, the function updates ``xHigherPriorityTaskWoken`` to ``pdTRUE``.
+
+Finally, ``portYIELD_FROM_ISR()`` checks this flag and requests an immediate context switch before exiting the interrupt. This allows the awakened higher-priority task to run immediately instead of waiting for the next scheduler tick.
 ```c
 static void IRAM_ATTR gpio_isr_handler(void* arg) {
-    xSemaphoreGiveFromISR(xGuiSemaphore, NULL);
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(xGuiSemaphore, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 ```
 Next, we create our task. This task is responsible for handling the actual work that should happen after the button press event. It first configures the LED GPIO as an output, then enters an infinite loop where it waits for a signal from the semaphore. When the ISR gives the semaphore, this task wakes up, toggles the LED state.
@@ -323,7 +327,7 @@ void led_toggle_task(void *pvParameters) {
     }
 }
 ```
-Finally In the `app_main` function, we first create a binary semaphore using `xSemaphoreCreateBinary()`. This semaphore will be used for synchronization between the interrupt service routine (ISR) and a task. After creation, we check whether the semaphore was successfully allocated by verifying that the returned handle is not `NULL`. If it is `NULL`, it means the system failed to allocate the required resources.
+Finally, in the `app_main()` function, we first create a binary semaphore using `xSemaphoreCreateBinary()`. This semaphore will be used for synchronization between the interrupt service routine (ISR) and a task. After creation, we check whether the semaphore was successfully allocated by verifying that the returned handle is not `NULL`. If it is `NULL`, it means the system failed to allocate the required resources.
 
 Next, we configure the GPIO using a `gpio_config_t` structure. This structure defines all the settings for the selected pin:
 
@@ -359,3 +363,22 @@ void app_main(void) {
     }
 }
 ```
+
+## Memory
+When we work with the ESP32-S3, understanding how memory operates is fundamental. Memory is where our program’s code, variables, and data live while the chip is running. To picture this, we can divide our memory into two main workspaces: Flash memory, which acts as our permanent filing cabinet, and RAM (Random Access Memory), which serves as our fast, temporary workbench.
+
+The ESP32-S3 manages these workspaces using flexible memory mapping and two distinct pathways: an instruction bus used exclusively for executing code, and a data bus used for reading and writing information byte by byte.
+### Flash Memory
+Flash memory is our long-term storage. It securely holds our program code, saved settings, and permanent data so that everything remains safe even when the board loses power. Because internal RAM is limited, we rely heavily on Flash to hold the bulk of our application.
+- **IROM (Code Executed from Flash):** This is where most of our executable binary code resides. Since we cannot fit everything into internal RAM, the ESP32-S3 uses a special caching system to map this code directly to the instruction space. This allows us to execute our application directly from Flash almost as quickly as if it were in internal memory.
+- **DROM (Data Stored in Flash):** This is our read-only data section. We use DROM to store constant variables and fixed data that our program needs to read but will never change or execute.
+### RAM
+RAM is exceptionally fast and is used for active calculations and temporary variables. However, standard RAM loses all its information when the power is turned off. The ESP32-S3 divides our RAM workbench into several specialized areas depending on what we need to achieve:
+- **DRAM (Data RAM):** This is our primary workspace for non-constant static data, zero-initialized data, and our runtime heap. DRAM is strictly connected to the data bus, meaning we cannot execute code from here. If we need certain data to survive a software restart (a warm boot), we can set aside a "noinit" section within DRAM to prevent it from being erased upon startup. Furthermore, when our hardware peripherals require direct memory access (DMA) to send or receive data rapidly, we must carefully place our memory buffers here in DRAM to ensure they are properly aligned and formatted.
+- **IRAM (Instruction RAM):** Unlike DRAM, IRAM is executable. We reserve this highly valuable space for our most critical tasks, such as interrupt handlers or timing-sensitive code. By placing these operations in IRAM, we avoid the slight delays of fetching instructions from Flash. It is a balancing act, however; any space we consume for IRAM reduces the amount of DRAM available for our static data and heap.
+- **RTC Memory (Real-Time Clock):** This is a special, low-power subset of RAM that remains active even when we put the rest of the chip into deep sleep.
+    - **RTC Fast Memory:** We use this area for code and data that must execute immediately when the chip wakes up from deep sleep. If we do not need it for wake-up routines, we can add the leftover space to our general data heap, though it operates slightly slower than standard DRAM.
+    - **RTC Slow Memory:** We utilize this deeper storage section for global and static variables that must retain their values throughout a deep sleep cycle, or for data that needs to be accessed by the Ultra Low Power (ULP) coprocessor while the main processor is resting.
+
+### Working with Ram
+Now that we understand the general structure of memory in the ESP32-S3, let’s explore how RAM works and how we can manipulate it. The ESP32-S3 divides RAM into two main regions: the heap and the stack.
