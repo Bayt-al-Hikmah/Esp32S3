@@ -370,3 +370,254 @@ esp_err_t json_handler(httpd_req_t *req){
 ```
 - **`application/json`**: This is the crucial shift. By altering the `Content-Type` header, a browser or API client immediately knows to parse this response as an object rather than displaying it as a flat line of text.
 - **String Escaping (`\"`)**: Because C uses double quotes to mark the beginning and end of strings, we have to use a backslash (`\`) to tell the compiler, _"Hey, this quote belongs inside the actual text package we are sending."_
+
+### Station (STA) Mode
+While AP mode is excellent for local configuration and direct control, most IoT applications require internet access. To achieve this, we configure the ESP32-S3 in Station (STA) mode. In this mode, the microcontroller acts exactly like your phone or laptop: it authenticates with a local router using an SSID and Password, connects to the network, and requests an IP address via DHCP.
+
+Once connected, the ESP32-S3 becomes part of the local network. This allows the microcontroller to:
+- Access the Internet
+- Communicate with cloud services
+- Send HTTP requests to external servers
+- Connect to MQTT brokers
+- Exchange data with mobile or desktop applications
+- Access devices already connected to the network
+
+#### Initializing and Setting the Mode
+Just like in AP mode, the Wi-Fi driver must be carefully initialized before the ESP32-S3 can attempt to connect to a router. The setup process is very similar, but the core network interface and configuration structures are specifically tailored for acting as a client.
+
+Here is an example of how we initialize the Wi-Fi stack, set the ESP32-S3 to STA mode, and configure the target network credentials.
+```c
+#include "esp_wifi.h"  
+#include "esp_event.h"  
+#include "nvs_flash.h"  
+#include <string.h>
+
+void wifi_init_sta(void)  {  
+    // Initialize NVS  
+    nvs_flash_init();  
+  
+    // Initialize TCP/IP stack  
+    esp_netif_init();  
+  
+    // Create default event loop  
+    esp_event_loop_create_default();  
+  
+    // Create default Wi-Fi Station interface  
+    esp_netif_create_default_wifi_sta();  
+  
+    // Initialize Wi-Fi driver  
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();  
+    esp_wifi_init(&cfg);  
+  
+    // Configure Station settings  
+    wifi_config_t sta_config = {  
+        .sta = {  
+            .ssid = "Home_Network",  
+            .password = "myrouterpassword",
+            // Require a minimum security standard
+            .threshold.authmode = WIFI_AUTH_WPA2_PSK, 
+        },  
+    };  
+  
+    // Set Wi-Fi mode to Station  
+    esp_wifi_set_mode(WIFI_MODE_STA);  
+  
+    // Apply STA configuration  
+    esp_wifi_set_config(WIFI_IF_STA, &sta_config);  
+  
+    // Start Wi-Fi  
+    esp_wifi_start();
+    
+    // Connect to router
+    esp_wifi_connect();  
+}
+```
+The initial software environment setup is almost identical to AP mode, with one critical distinction:
+- **`esp_netif_create_default_wifi_sta()`**: Instead of creating an AP interface, this function creates a default network interface specifically designed for a Wi-Fi Station. It prepares the TCP/IP stack to operate as a client that will request an IP address, rather than acting as a router that assigns them.    
+
+Next, we define the target network using the `wifi_config_t` structure, but this time we populate the `.sta` (Station) struct instead of the `.ap` struct:
+- **SSID (`"Home_Network"`)**: The name of the router or network the ESP32 should search for.
+- **Password (`"myrouterpassword"`)**: The Wi-Fi password for that specific router.
+- **Threshold Authmode (`WIFI_AUTH_WPA2_PSK`)**: This is a security feature. It tells the ESP32-S3 to refuse connection to the router if the router's security level is lower than WPA2. This prevents the device from accidentally connecting to a spoofed, unsecured "dummy" network with the same name.
+
+After defining the configuration, the ESP32 is switched into STA mode, configured, and started:
+- **`esp_wifi_set_mode(WIFI_MODE_STA)`**: Explicitly tells the Wi-Fi radio to act as a client.
+- **`esp_wifi_set_config(WIFI_IF_STA, &sta_config)`**: Loads the target router's credentials into memory.
+- **`esp_wifi_start()`**: Powers on the Wi-Fi radio. However, unlike AP mode, starting the Wi-Fi in STA mode does not automatically connect to the network. It merely powers up the radio and gets it ready to begin the connection handshake.
+- `esp_wifi_connect()`: Initiates the complete Wi-Fi connection process. The ESP32 begins scanning for the target network, discovers the router, performs authentication and association, then requests network configuration through DHCP. Once the process succeeds, the router assigns an IP address, allowing the ESP32 to join the local network and communicate over the internet.
+
+#### Handling Connection Events
+Connecting to a router requires an asynchronous handshake: the ESP32 must scan for the network, authenticate, associate, and finally request an IP address. Because this process takes time and is prone to errors like a wrong password or weak signal, we manage it using the Event Loop.   
+
+The ESP32 generates events for:
+- Successful connection
+- Disconnection
+- IP acquisition
+- Authentication failure
+- Lost signal
+- Reconnection attempts
+
+When connecting to Wi-Fi, it is important to register an event handler function that listens for Wi-Fi and IP-related events. This allows the program to know exactly when the ESP32 has successfully connected to the network and obtained an IP address, making it safe to begin transmitting data over the internet.    
+Let’s create a simple function that handles the Wi-Fi events.
+```c
+// Define the event handler function
+static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        // The Wi-Fi radio has successfully started. Now, tell it to connect.
+        esp_wifi_connect();
+        printf("Wi-Fi started, attempting to connect...\n");
+        
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        // The connection failed, or we lost the signal. Try again.
+        esp_wifi_connect();
+        printf("Disconnected from router. Retrying connection...\n");
+        
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        // The router accepted us and assigned an IP address!
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+        printf("Successfully connected! My IP is: " IPSTR "\n", IP2STR(&event->ip_info.ip));
+    }
+}
+```
+
+This function is a traffic cop for network events. It looks at two main things: the `event_base` (is this a Wi-Fi hardware event, or an IP address event?) and the `event_id` (what exactly happened?).
+
+- **`WIFI_EVENT_STA_START`**: This event fires immediately after `esp_wifi_start()` finishes successfully. It is the green light to call `esp_wifi_connect()`, which officially starts the handshake with your home router.
+- **`WIFI_EVENT_STA_DISCONNECTED`**: This event fires if the router rejects the password, if the router is turned off, or if the ESP32 wanders out of range. Calling `esp_wifi_connect()` here acts as an automatic infinite retry loop.
+- **`IP_EVENT_STA_GOT_IP`**: This is the ultimate goal. Just connecting to the Wi-Fi isn't enough; the ESP32 cannot use the internet until the router's DHCP server assigns it an IP address. When this event fires, the connection process is fully complete.
+
+
+To make this handler work correctly, the event handlers must be registered **before** calling `esp_wifi_start()`. Since `esp_wifi_connect()` is now being called inside the event handler function, we can remove it from the `wifi_init_sta()` function.
+```c
+esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL);
+esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL, NULL);
+```
+The `esp_event_handler_instance_register()` function takes five arguments:
+1. **Event base** Specifies the event category, such as `WIFI_EVENT` or `IP_EVENT`.
+2. **Event ID** Defines the specific event to listen for. `ESP_EVENT_ANY_ID` listens to all events in that category.
+3. **Event handler function** A pointer to the callback function that will execute when the event occurs.
+4. **Event handler argument** Optional user data passed to the handler function. `NULL` means no extra data is provided.
+5. **Handler instance object** Used to store the handler instance for later removal if needed. 
+
+#### Making HTTP Requests 
+Once the `IP_EVENT_STA_GOT_IP` event fires, the ESP32-S3 has internet access. While AP mode focused on hosting an HTTP Server to receive incoming requests, STA mode relies heavily on the HTTP Client to make outgoing requests to the rest of the world.
+
+Instead of waiting for a browser to ask for a webpage, the ESP32 acts like the browser. It reaches out to external APIs, web servers, or cloud platforms to GET or POST data. The ESP-IDF provides the `esp_http_client` library for this exact purpose.
+
+When we send a request to a remote server, the server will reply with an HTTP response (which includes status codes like `200 OK` or `404 Not Found`, and the actual payload data). Because responses can be large and arrive over time, the HTTP client uses an event handler to process the data in chunks as it arrives.
+
+Below is an example of how to configure the client, send a GET request to an external API, and handle the incoming response data.
+
+First, we define our event handler to capture the response data:
+```c
+#include "esp_http_client.h"
+#include "esp_crt_bundle.h"
+esp_err_t client_event_handler(esp_http_client_event_t *evt) {
+    switch(evt->event_id) {
+        case HTTP_EVENT_ON_DATA:
+            // This event is triggered when the client receives data from the server
+            if (!esp_http_client_is_chunked_response(evt->client)) {
+                // Print the incoming data payload to the terminal
+                printf("Received Data: %.*s\n", evt->data_len, (char*)evt->data);
+            }
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            printf("HTTP Request completed successfully.\n");
+            break;
+        default:
+            break;
+    }
+    return ESP_OK;
+}
+```
+The HTTP client uses an event-driven callback system to process the server response asynchronously.  
+Whenever something important happens during the connection (receiving data, finishing the request, errors, etc.), the ESP-IDF HTTP client automatically calls the registered event handler function.
+- **`HTTP_EVENT_ON_DATA`**: Triggered whenever the ESP32 receives response data from the server.
+    - `evt->data` points to the received payload bytes.
+    - `evt->data_len` tells us how many bytes arrived.
+    - `esp_http_client_is_chunked_response()` checks whether the server is sending the response in chunks.
+    Inside this event, applications commonly:
+    - Parse JSON or XML responses
+    - Extract API values
+    - Store data into buffers
+    - Trigger actions based on received information
+- **`HTTP_EVENT_ON_FINISH`**: Triggered once the full HTTP response has been completely received and processed.
+
+For example, if the server returns weather data like:
+```
+{    "temperature": 28,    "humidity": 65}
+```
+The `HTTP_EVENT_ON_DATA` section is where the ESP32 would parse the JSON response and extract values such as temperature and humidity for further processing.
+
+
+Next, we write the function that actually initializes the HTTP client, opens the connection, and performs the request:
+```c
+void fetch_weather_data(void) {
+    // 1. Configure the HTTP Client
+    esp_http_client_config_t config = {
+        .url = "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M&community=RE&longitude=3.0588&latitude=36.7538&start=20260510&end=20260511&format=JSON",
+        .event_handler = client_event_handler, // Attach our handler
+        .crt_bundle_attach = esp_crt_bundle_attach,
+    };
+    
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+
+    // 2. Specify the Request Method (GET is default, but we can explicitly set it)
+    esp_http_client_set_method(client, HTTP_METHOD_GET);
+
+    // 3. Perform the request
+    esp_err_t err = esp_http_client_perform(client);
+    
+    if (err == ESP_OK) {
+        printf("HTTP GET Status = %d, content_length = %lld\n",
+                esp_http_client_get_status_code(client),
+                esp_http_client_get_content_length(client));
+    } else {
+        printf("HTTP GET request failed: %s\n", esp_err_to_name(err));
+    }
+
+    // 4. Cleanup and free memory
+    esp_http_client_cleanup(client);
+}
+```
+Before the network request is sent, the HTTP client is configured and initialized:
+- **`esp_http_client_config_t config`**: This structure stores the HTTP client configuration.
+    - `.url` specifies the exact server address the ESP32 will connect to.
+    - `.event_handler = client_event_handler` registers the callback function responsible for handling incoming events and response data.
+- **`esp_http_client_init(&config)`**: Creates and initializes the HTTP client instance.  Internally, this function:
+    - Allocates memory for the client
+    - Parses the URL into host, port, and path components
+    - Prepares the TCP/IP networking layer
+    - Sets up the internal connection structures
+
+After initialization, the request method is configured:
+- **`esp_http_client_set_method(client, HTTP_METHOD_GET)`**:  Sets the HTTP request type to **GET**, meaning the ESP32 wants to retrieve data from the server without uploading new information.
+
+Next, the actual network transaction is executed:
+- **`esp_http_client_perform(client)`**:This is a blocking function that performs the complete HTTP transaction.  Internally, it:
+    - Resolves the domain name using DNS
+    - Opens a TCP connection to the remote server
+    - Sends the HTTP request headers
+    - Receives the HTTP response
+    - Triggers event callbacks such as `HTTP_EVENT_ON_DATA`
+    - Waits until the transaction is fully completed
+
+After the request finishes:
+- **`esp_http_client_get_status_code(client)`** retrieves the HTTP response status code (such as `200 OK` or `404 Not Found`).
+- **`esp_http_client_get_content_length(client)`** returns the size of the received payload.
+
+Finally:
+- **`esp_http_client_cleanup(client)`** closes the TCP connection and frees all dynamically allocated memory used by the HTTP client, helping prevent memory leaks in embedded systems.
+
+#### HTTP Server with Station Mode
+One major advantage of Station Mode (STA) is that the ESP32-S3 can still run an HTTP server while connected to the router.
+
+This means devices on the same network can communicate with the ESP32-S3 without connecting directly to it. Any phone, laptop, or computer connected to the same router can access the ESP32-S3 using its local IP address.
+```
+http://192.168.100.17
+```
+Another important advantage is that the HTTP server can be exposed to the internet. By configuring port forwarding or using a domain name and DNS service, the ESP32-S3 can send and receive data from anywhere in the world. This allows remote control, cloud integration, and real-time monitoring over the internet.
+
+In this setup, the ESP32-S3 acts both as:
+1. A Wi-Fi client connected to the router
+2. A web server serving HTTP requests to other devices or internet users
