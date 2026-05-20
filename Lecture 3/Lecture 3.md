@@ -786,13 +786,13 @@ A servo motor typically has three pins: GND, VCC, and a control pin. The control
 The control signal is a PWM waveform with a frequency of 50 Hz, which corresponds to a period of 20 ms. The position of the servo is controlled by the width of the pulse within this period.
 
 For a standard servo motor:
-- A **1 ms** pulse rotates the shaft to approximately **−90°**
-- A **1.5 ms** pulse sets the shaft to **0° (center position)**
-- A **2 ms** pulse rotates the shaft to approximately **+90°**
+- A **0.5 ms** pulse rotates the shaft to approximately **−90°**
+- A **1.45 ms** pulse sets the shaft to **0° (center position)**
+- A **2.5 ms** pulse rotates the shaft to approximately **+90°**
 
 Since the relationship between pulse width and angle is approximately linear, we can express it as:
 ```math
-Pms = 1.5 + \theta \times \frac{0.5}{90}​
+Pms = 1.5 + \theta \times \frac{1}{90}​
 ```
 where:
 - $P_{ms}$​ is the pulse width in milliseconds
