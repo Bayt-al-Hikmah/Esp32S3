@@ -10,7 +10,7 @@ const char* DASHBOARD_HTML =
 "<title>ESP32 Web Panel</title>"          
 "</head>"
 "<body>"
-    "<h1>Control LEDs!</h1>"
+    "<h1>Control Servo Motor!</h1>"
     "<div>"
     "<span>"
     "<input type=\"range\" id=\"angle\" min=\"0\" max=\"180\" value=\"0\"/>"

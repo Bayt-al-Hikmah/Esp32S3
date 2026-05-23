@@ -1,13 +1,9 @@
 #include "esp_http_server.h"
 #include "handlers.h"
-#include "driver/gpio.h"
 #include <stdbool.h>
+#include "utils.h"
+#include "leds.h"
 
-
-
-bool redLed = false;
-bool yellowLed = false;
-bool greenLed = false;
 const char* DASHBOARD_HTML =
 
 "<!DOCTYPE html>"
@@ -58,44 +54,6 @@ const char* DASHBOARD_HTML =
 "</body>"
 "</html>";
 
-
-
-bool toggle_led(int ledNumber){
-    if (ledNumber == 1) {
-        greenLed ^= 1;
-        gpio_set_level(10, greenLed);
-        return greenLed;
-    } else if (ledNumber == 2) {
-        redLed ^= 1;
-        gpio_set_level(11, redLed);
-        return redLed;
-    } else if (ledNumber == 3) {
-        yellowLed ^= 1;
-        gpio_set_level(12, yellowLed );
-        return yellowLed;
-    }
-    return false;
-}
-
-
-int extract_index(char* buffer, char* argument, int size){
-    bool match = false;
-    for (int i = 0; buffer[i] != '\0'; i++){
-        if(buffer[i] == argument[0]){
-            match = true;
-            for (int j = 1; buffer[j] != '\0' && j < size; j++){
-                if(buffer[i+j] != argument[j]){
-                    match = false;
-                    break ;
-                }
-            }
-            if (match){
-                return i + size;
-            }
-        }
-    }
-    return -1;
-}
 
 esp_err_t dashboard_handler(httpd_req_t *req) {
     httpd_resp_send(req, DASHBOARD_HTML, HTTPD_RESP_USE_STRLEN);
