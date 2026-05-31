@@ -29,9 +29,9 @@ void init_obstacle_sensor(void ){
 void send_sse_message(void *pvParameters) {
     while (1) {
        if(_data.state){
-        httpd_socket_send(_data.argument.mySocketHD, _data.argument.mySocketFD, "data: no obstacle\n\n", strlen("data: no obstacle\n\n"), 0);
+            httpd_socket_send(_data.argument.mySocketHD, _data.argument.mySocketFD, "data: No obstacle\n\n", strlen("data: No obstacle\n\n"), 0);
          } else{
-            httpd_socket_send(_data.argument.mySocketHD, _data.argument.mySocketFD, "data: obstacle\n\n", strlen("data: obstacle\n\n"), 0);
+            httpd_socket_send(_data.argument.mySocketHD, _data.argument.mySocketFD, "data: Obstacle\n\n", strlen("data: Obstacle\n\n"), 0);
        }
        vTaskDelay(pdMS_TO_TICKS(100));
     }

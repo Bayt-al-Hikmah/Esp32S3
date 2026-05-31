@@ -13,8 +13,8 @@ const char* DASHBOARD_HTML =
 "<body>"
     "<h1>Obstacle Detection!</h1>"
     "<div>"
+    "The sensor detected that there is: "
     "<span id =\"obstacle\">"
-
     "</span>"
     "</div>"
 "<script>"
@@ -25,14 +25,6 @@ const char* DASHBOARD_HTML =
 "};"
 
 "</script>"
-"<style>"
-"div{"
-"display:flex;"
-"row-gap:10px;"
-"align-items:center;"  
-"flex-direction:column;"
-"}"
-"</style>"
 "</body>"
 "</html>";
 
