@@ -467,7 +467,6 @@ First we define the variables that hold its configuration:
     - **Attenuation** (`.atten = ADC_ATTEN_DB_12`):  
         This determines the measurable voltage range. With 12 dB attenuation, the ADC can read voltages approximately from 0 V to 3.3 V, which matches typical ESP32 input levels.
 
-
 Next, we create (initialize) the ADC unit using the configuration with `adc_oneshot_new_unit` which sets up the ADC hardware and stores the resulting handle in `adc1_handle`.
 ```c
 adc_oneshot_new_unit(&init_config1, &adc1_handle);
@@ -478,7 +477,6 @@ adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config);
 ```
 We select `ADC_CHANNEL_0` (which maps to GPIO 1) and apply the channel configuration we defined earlier.
 
-Here the full program:
 ```c
    
     adc_oneshot_unit_handle_t adc1_handle;

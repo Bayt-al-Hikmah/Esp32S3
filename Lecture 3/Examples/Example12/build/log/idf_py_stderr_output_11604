@@ -1,0 +1,25 @@
+Command: cmake -G Ninja -B C:\Users\Acer\Desktop\Esp32S3\Lecture 3\Examples\Example12\build -DPYTHON_DEPS_CHECKED=1 -DPYTHON=C:\Espressif\tools\python\v6.0\venv\Scripts\python.exe -DESP_PLATFORM=1 -DCCACHE_ENABLE=False C:\Users\Acer\Desktop\Esp32S3\Lecture 3\Examples\Example12
+Configuration Report               
++---------------------------------+
+|  Parser Version: 1              |
+|  Verbosity: default             |
+|  Defaults policy: sdkconfig     |
+|  Status: Finished successfully  |
+|                                 |
++---------------------------------+
+CMake Warning (dev) at C:/Espressif/tools/cmake/4.0.3/share/cmake-4.0/Modules/GNUInstallDirs.cmake:250 (message):
+  Unable to determine default CMAKE_INSTALL_LIBDIR directory because no
+  target architecture is known.  Please enable at least one language before
+  including GNUInstallDirs.
+Call Stack (most recent call first):
+  C:/esp/v6.0/esp-idf/components/mbedtls/mbedtls/CMakeLists.txt:59 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+fatal: detected dubious ownership in repository at 'C:/esp/v6.0/esp-idf/components/openthread/openthread'
+'C:/esp/v6.0/esp-idf/components/openthread/openthread/.git' is owned by:
+	'S-1-5-32-544'
+but the current user is:
+	'S-1-5-21-1941439771-435736761-3689304458-1001'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory C:/esp/v6.0/esp-idf/components/openthread/openthread
