@@ -259,8 +259,6 @@ Finally we connect GPIO 1 pin of the master ESP32-S3 to the push button, and GPI
 
 <img src="./attachments/i2c_circuit.png" />
 
-
-
 After building the circuit, we can begin writing the program for the first ESP32-S3, which will operate as the I²C master.
 
 First, we include the required libraries and define the I2C configuration constants.

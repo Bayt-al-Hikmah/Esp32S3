@@ -468,13 +468,9 @@ Within the `lcd` folder, we add a `CMakeLists.txt` file to define the build rule
 Inside `components/lcd/CMakeLists.txt`, we use the `idf_component_register` function to tell the build system which source files to compile and where to find the public headers:
 ```
 idf_component_register(SRCS "lcd.c"  
-INCLUDE_DIRS "include")
-```
-Finally, we update the `CMakeLists.txt` file inside the `main` folder. By adding the `REQUIRES` keyword, we ensure the build system links the `lcd` component to our main application:
-```
-idf_component_register(SRCS "main.c"  
-INCLUDE_DIRS "."
-REQUIRES lcd)
+INCLUDE_DIRS "include"
+REQUIRES esp_driver_gpio
+)
 ```
 After finishing restructuring the project we can start implementing the lcd component logic, First we read the datasheet to know how we can program and control the divice.   
 By quick check we can see that the RS and RW pins controll the working mode of the lcd:
@@ -495,12 +491,9 @@ Finally before sending any command or trying to display any character in the lcd
 
 <img src="./attachments/chart.png" />
 
-Now we know how the Lcd work, lets start creating our program, we start by including the library we will use 
+Now we know how the Lcd work, lets start creating our program, we start by including the library we will use inside the ``lcd.h`` file, and  
 ```c
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "rom/ets_sys.h"
+#include "lcd.h"
 ```
 Now lets create our functions we start with `lcd_pulse_enable` which handel the enable pulse on the E pin
 ```c
@@ -585,7 +578,7 @@ void initialize_lcd(){
 Before implementing the functions used to display text and characters, we first define two helper functions.   
 The first function clears the display and returns the cursor to the home position. This is done by sending the clear display command (`0x01`), followed by a short delay to allow the LCD to complete the operation.
 ```C
-void clear display(){
+void clear_display(){
 	send_command(0x01);
     vTaskDelay(pdMS_TO_TICKS(2));
 }
@@ -630,8 +623,11 @@ between  the guards we write the functions we plan to share. and we define the 
 ```c
 #ifndef LCD_H  
 #define LCD_H  
-  
-#include <stdint.h>  
+
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "rom/ets_sys.h"
   
 #define D4 1
 #define D5 2
@@ -640,10 +636,9 @@ between  the guards we write the functions we plan to share. and we define the 
 #define RS 20
 #define E 19
 
-// Initialization  
+
 void initialize_lcd(void);  
   
-// Basic control  
 void clear_display(void);  
 void move_to(uint8_t line, uint8_t column);  
   
@@ -656,9 +651,6 @@ Now, in the `main.c` file, we can include the LCD component and display a simple
 
 After initializing the LCD, we send a string to be displayed on the screen.
 ```c
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "lcd.h"  
   
 void app_main(void) {
