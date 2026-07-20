@@ -395,13 +395,12 @@ Let’s create a simple example to understand how the stack works. In this examp
   
 void secondFunction() {  
 	int b = 20;  
-	printf("b = %d\n a = %d\n", b,a); // we can access a  
+	printf("b = %d\n", b);  
 }  
   
 void firstFunction() {  
 	int a = 10;  
 	printf("a = %d\n", a); 
-	//b = 5 + a  we cant access be
 	secondFunction();  
 }  
   
@@ -417,7 +416,7 @@ Once `secondFunction()` finishes, its stack frame is automatically removed, and 
 
 <img src="./attachments/stack_free.png"/>
 
-This process demonstrates why local variables exist only within their function or nested functions, and why we cannot access a variable after its function has finished executing. After a function returns, its stack memory is released and may later be reused by other functions
+This process demonstrates why local variables exist only within their function, and why we cannot access a variable after its function has finished executing. After a function returns, its stack memory is released and may later be reused by other functions
 
 #### Heap
 Unlike the stack, which automatically allocates and releases memory during function calls, the heap is used for dynamic memory allocation. Memory in the heap is managed manually by the programmer, meaning we explicitly request memory when needed and release it when it is no longer required.    
@@ -537,6 +536,23 @@ void app_main(void) {
 - Image processing or camera framebuffers
 - Audio data processing
 - Large network packets
+
+First thing we need to do is configuring and enabling the PSRAM, we do that by running the following command  
+
+`idf.py menuconfig`   
+
+After that we enable PSRAM as following
+
+```
+Component config
+    ESP PSRAM
+        [*] Support for external, SPI-connected RAM
+```
+Next we access to `Mode of SPI RAM` and we set it to `Octal Mode PSRAM`, finally we go to`SPI RAM config`, we go then to `SPI RAM access method` and we select
+```
+Make RAM allocatable using heap_caps_malloc..
+```
+Now we ready to use the PSRAM memory
 ```c
 // Allocate a massive buffer in external PSRAM
 int *buffer = heap_caps_malloc(10000 * sizeof(int), MALLOC_CAP_SPIRAM);
