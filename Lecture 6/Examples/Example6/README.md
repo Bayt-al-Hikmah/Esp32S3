@@ -1,4 +1,4 @@
-# Working with RAM: Understanding the Stack
+# Working with the Stack
 
 This example illustrates how stack memory changes as functions call one another. The program begins execution in `app_main()`, which calls `firstFunction()`. At this point, the processor creates a new stack frame for `firstFunction()`, allocating memory for its local variable `a` along with the function's return address and any required execution information.
 

@@ -1,4 +1,4 @@
-# FreeRTOS Resource Management Using Mutexes
+# Working with Mutexes
 
 This example demonstrates how to protect shared resources in a FreeRTOS application running on an ESP32-S3 using **Mutexes**. The application is organized into separate software components, with two independent tasks that both write messages to the serial terminal. Since the terminal is a shared resource, a mutex is used to ensure that only one task can access it at a time, preventing conflicting operations and maintaining consistent output.
 

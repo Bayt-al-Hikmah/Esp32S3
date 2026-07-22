@@ -1,4 +1,4 @@
-# FreeRTOS Signaling and Synchronization Using Binary Semaphores
+# FreeRTOS Signaling and Synchronization
 
 This example demonstrates how to synchronize an **Interrupt Service Routine (ISR)** with a FreeRTOS task on an ESP32-S3 using a **Binary Semaphore**. The application is organized into separate software components, with one component responsible for handling a push-button interrupt and another responsible for controlling an LED. Rather than performing work directly inside the interrupt, the ISR simply signals a waiting task, allowing the time-consuming processing to occur outside the interrupt context.
 

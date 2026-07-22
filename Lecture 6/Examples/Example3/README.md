@@ -1,4 +1,4 @@
-# FreeRTOS Inter-Task Communication Using Queues
+# FreeRTOS Inter-Task Communication
 
 This example demonstrates how to safely exchange data between multiple FreeRTOS tasks on an ESP32-S3 using **Queues**. The application is organized into separate software components, with one component responsible for reading data from an LDR (Light Dependent Resistor) sensor and another responsible for controlling an LED. 
 
@@ -10,4 +10,4 @@ The **Light Component** contains the `light_task()`, which configures GPIO 7 as 
 
 Inside `app_main()`, the queue is created before any tasks are started. Both the sensor and light tasks receive access to the same queue through the shared global queue handle, allowing them to communicate without directly sharing sensor data. 
 
-<img src="../../../attachments/ldr_circuit.png" />
+<img src="../../attachments/ldr_circuit.png" />

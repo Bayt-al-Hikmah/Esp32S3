@@ -745,7 +745,8 @@ The `set_counter()` function is responsible for saving the counter value into NV
 NVS also supports strings, we can store strings by using `nvs_set_str()`
 ```c
 char ssid[] = "MyWiFi";
-nvs_set_str(my_handle, "wifi_ssid", ssid);nvs_commit(my_handle);
+nvs_set_str(my_handle, "wifi_ssid", ssid);
+nvs_commit(my_handle);
 ```
 To read string we use `nvs_get_str` since we not sure about the size of stored string we first use the function to retrive the size of string, then we create bugger with same size and read the string
 ```c
@@ -781,7 +782,7 @@ Next, we need to tell ESP-IDF to use our custom partition table and include the 
 The ESP-IDF Component Manager will automatically download and integrate the LittleFS component during the build process.
 ```
 dependencies:
- espressif/esp_littlefs: "^1.1.0"
+  joltwallet/littlefs: "~=1.21.0"
 ```
 After that, enable the custom partition table configuration by running the following command in the terminal:
 ```
@@ -799,58 +800,45 @@ To:
 ```
 Custom partition table CSV
 ```
+Since our application uses more than **2 MB** of flash memory, we need to update the serial flash configuration.
+
+First, open:
+```
+Serial flasher config
+```
+Then navigate to:
+```
+Flash size
+```
+Select a flash size that is **larger than 2 MB** and matches the flash capacity of your ESP32 board.
+
+If you are unsure how much flash your board has, check the board specifications or the module's documentation. Once you know the available flash size, make sure the **Partition Table** is configured to fit within that capacity. The total size of all partitions must not exceed the flash memory available on the board.
+
 Finally, save the configuration and exit the menu.
 
+Now that we have finished the configuration, let's build a small project to see LittleFS in action. In this example, we will create a file, flash it into the ESP32's LittleFS partition, and then read it back. This is the same approach commonly used by web server projects to store HTML, CSS, JavaScript, images, and other static files.
 
-Now that LittleFS storage is configured, we can start using it in our project . ESP-IDF integrates LittleFS with the Virtual File System (VFS) layer, which means we can use standard C file functions such as `fopen()`, `fprintf()`, `fgets()`, and `fclose()` exactly like we would on a desktop system.     
-
-The following example demonstrates the complete workflow:
-- Mounting the LittleFS partition
-- Creating and writing to a file
-- Reading the file back
-- Unmounting the file system
+First, create a folder named `littlefs` in your project directory. Inside this folder, create a file named `hello.txt` and add the following content:
+```
+Hello world
+```
+Next, create the following program:
 ```c
 #include <stdio.h>
 #include <string.h>
-
 #include "esp_littlefs.h"
 
 void app_main(void) {
-
-    // 1. Configure the LittleFS mount
     esp_vfs_littlefs_conf_t conf = {
-        .base_path = "/littlefs",       // The root path we will use in code
-        .partition_label = "storage",   // Must match the name in partitions.csv
-        .format_if_mount_failed = true, // Format the partition if it's empty/corrupted
+        .base_path = "/littlefs",      
+        .partition_label = "storage",   
+        .format_if_mount_failed = true,
         .dont_mount = false,
     };
-    // 2. Initialize and mount the file system
-    esp_err_t ret = esp_vfs_littlefs_register(&conf);
+    esp_vfs_littlefs_register(&conf);
 
-    if (ret != ESP_OK) {
-        printf("Failed to mount or format filesystem\n");
-        return;
-    }
-
-    printf("LittleFS mounted successfully.\n");
-
-    // 3. Write a file (standard C library functions)
-    printf("Opening file for writing...\n");
-    FILE *f = fopen("/littlefs/hello.txt", "w");
-
-    if (f == NULL) {
-        printf("Failed to open file for writing\n");
-        return;
-    }
     
-    fprintf(f, "Hello World from LittleFS on ESP32-S3!\n");
-    fclose(f);
-    
-    printf("File written.\n");
-    // 4. Read the file back
-    printf("Opening file for reading...\n");
-    
-    f = fopen("/littlefs/hello.txt", "r");
+   FILE *f = fopen("/littlefs/hello.txt", "r");
     if (f == NULL) {
         printf("Failed to open file for reading\n");
         return;
@@ -858,28 +846,35 @@ void app_main(void) {
     char line[64];
     fgets(line, sizeof(line), f);
     fclose(f);
-    
-    // Remove newline character if present
     char *pos = strchr(line, '\n');
     if (pos) {
         *pos = '\0';
     }
     printf("Read from file: '%s'\n", line);
-    // 5. Unmount (optional, usually done before a system reboot)
     esp_vfs_littlefs_unregister(conf.partition_label);
 }
+
 ```
-The first step is creating an `esp_vfs_littlefs_conf_t` configuration structure. This tells ESP-IDF how the file system should be mounted. The `base_path` field defines the virtual directory where the file system will appear in our application, while `partition_label` must match the partition name defined in `partitions.csv`.
+The first step is creating an `esp_vfs_littlefs_conf_t` configuration structure. This structure tells ESP-IDF how the LittleFS file system should be mounted. The `base_path` field specifies the virtual directory where the file system will appear in our application, while `partition_label` must match the partition name defined in `partitions.csv`.
 
-The `format_if_mount_failed` option is especially useful during development. If the partition is empty or corrupted, ESP-IDF will automatically format it instead of failing to mount.
+The `format_if_mount_failed` option is particularly useful during development. If the partition is empty or becomes corrupted, ESP-IDF will automatically format it instead of failing to mount. In a production application, you would typically set this option to `false` to avoid accidentally erasing stored data.
 
-Next, we mount the file system using `esp_vfs_littlefs_register()`. If the mount succeeds, the partition becomes accessible through the VFS layer, allowing us to use standard C file operations.
+Next, we mount the file system by calling `esp_vfs_littlefs_register()`. Once the mount is successful, the partition becomes accessible through ESP-IDF's Virtual File System (VFS), allowing us to use the standard C file functions such as `fopen()`, `fgets()`, `fprintf()`, and `fclose()`.
 
-To create a file, we use `fopen()` with write mode (`"w"`). The file path starts with `/littlefs/` because that is the mount point we configured earlier. We then write text into the file using `fprintf()` and close it with `fclose()` to ensure the data is saved properly.
+To read the file, we call `fopen()` with the `"r"` mode to open `hello.txt` for reading. If the file cannot be opened, the program prints an error message and exits. Otherwise, `fgets()` reads the contents of the file into a character buffer, and we remove the trailing newline before printing the result to the serial monitor.
 
-After writing, the example reopens the same file in read mode (`"r"`). The `fgets()` function reads the file contents into a character buffer, which we then print to the serial monitor.
+Finally, we unmount the file system using `esp_vfs_littlefs_unregister()`. Although many embedded applications keep the file system mounted for the entire lifetime of the program, unmounting it is good practice when the application is shutting down or before restarting the device.
 
-Finally, we unmount the file system using `esp_vfs_littlefs_unregister()`. This step is optional in many embedded applications, but it is good practice before restarting the device or shutting down the system.
+
+Before compiling the project, we also need to tell the build system to create a LittleFS image from the `littlefs` folder and include it when flashing the ESP32.
+
+To do this, open the project's top-level `CMakeLists.txt` file and add the following line:
+```
+littlefs_create_partition_image(storage littlefs FLASH_IN_PROJECT)
+```
+The first argument, `storage`, is the partition label and **must** match the partition name defined in `partitions.csv`. The second argument, `littlefs`, specifies the folder containing the files that will be packaged into the LittleFS image. Finally, the `FLASH_IN_PROJECT` option instructs ESP-IDF to automatically flash the generated LittleFS image whenever you run `idf.py flash`, so there is no need to flash the file system separately.
+
+After adding this line, build and flash the project as usual. During the build process, ESP-IDF will package everything inside the `littlefs` folder into a LittleFS image, flash it to the `storage` partition, and your application will be able to access those files at runtime.
 
 #### Raw Flash Partition Access
 While filesystems like LittleFS and SPIFFS are excellent for managing files and directories, they introduce overhead. If we need to log massive arrays of raw sensor metrics, stream binary data at high speeds, or manage custom cryptographic blobs, bypassing the Virtual File System (VFS) entirely gives us absolute control and maximum performance.
