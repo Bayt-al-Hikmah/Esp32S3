@@ -1,30 +1,29 @@
-#include "esp_http_server.h"
-#include "handlers.h"
-#include "server.h"  
+#include "server.h"
 
-httpd_uri_t dashboard_uri = {
-    .uri      = "/",
+
+esp_err_t hello_get_handler(httpd_req_t *req) {
+    const char* resp_str = "Hello from ESP32-S3!";
+    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+    
+    return ESP_OK;
+}
+
+httpd_uri_t hello_uri = {
+    .uri      = "/hello",
     .method   = HTTP_GET,
-    .handler  = dashboard_handler,
-    .user_ctx = NULL
-};
-
-httpd_uri_t servo_uri = {
-    .uri      = "/servo",
-    .method   = HTTP_POST,
-    .handler  = servo_handler,
+    .handler  = hello_get_handler,
     .user_ctx = NULL
 };
 
 httpd_handle_t start_webserver(void) {
     httpd_handle_t server = NULL;
+
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+
     if (httpd_start(&server, &config) == ESP_OK) {
-        httpd_register_uri_handler(server, &dashboard_uri);
-        httpd_register_uri_handler(server, &servo_uri);
+        httpd_register_uri_handler(server, &hello_uri);
         return server;
     }
 
     return NULL; 
 }
-

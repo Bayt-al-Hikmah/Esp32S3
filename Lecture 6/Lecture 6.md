@@ -899,6 +899,25 @@ factory, app, factory, , 1M,
 raw_data, data, 0x99, , 256K,
 ```
 In this setup, we define a partition labeled `raw_data`. We use the generic `data` type, and assign a custom hexadecimal subtype (`0x99`) to clearly define it as a non-filesystem, raw storage space. Its size is restricted to 256 KB.
+
+After adding the partition table and component dependency, configure the project by running:
+```
+idf.py menuconfig
+```
+Navigate to:
+```
+Partition Table
+    Partition Table
+```
+and change the partition table option from:
+```
+Single factory app, no OTA
+```
+to:
+```
+Custom partition table CSV
+```
+
 #### Reading and Writing Raw Flash
 To interact with this partition, include the `esp_partition.h` header. The workflow involves locating the partition by its label, erasing the target sector, writing binary data, and reading it back.
 
@@ -914,8 +933,8 @@ void app_main(void) {
 	// 1. Find the custom partition  
 	const esp_partition_t *partition =  esp_partition_find_first(  
 		ESP_PARTITION_TYPE_DATA,  
-		0x40,  
-		"storage"  
+		0x99,  
+		"raw_data"  
 	);  
   
 	if (partition == NULL) {  
@@ -973,7 +992,7 @@ void app_main(void) {
 	printf("Read from flash: '%s'\n", buffer);  
 }
 ```
-The first step is locating the partition using `esp_partition_find_first()`. We search for a partition with type `ESP_PARTITION_TYPE_DATA`, subtype `0x40`, and label `"storage"`.
+The first step is locating the partition using `esp_partition_find_first()`. We search for a partition with type `ESP_PARTITION_TYPE_DATA`, subtype `0x99`, and label `"raw_data"`.
 
 If the partition exists, ESP-IDF returns a pointer to an `esp_partition_t` structure containing information about the partition, including its address, size, and label.
 
