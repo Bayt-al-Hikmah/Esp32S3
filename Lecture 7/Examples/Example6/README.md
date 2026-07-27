@@ -1,0 +1,13 @@
+# Connecting to a Wi-Fi Network 
+
+This example demonstrates how to configure the ESP32-S3 in **Station (STA) mode** using ESP-IDF. Unlike **Access Point (AP)** mode, where the ESP32 creates its own wireless network, Station mode allows the ESP32 to connect to an existing Wi-Fi router just like a laptop or smartphone. Once connected, the device gains access to the local network and, if the router provides Internet access, it can also communicate with web servers and cloud services.
+
+Before connecting to a network, the ESP-IDF networking stack must be initialized. This includes initializing the Non-Volatile Storage (NVS), the TCP/IP network interface, the default event loop, and the default network interface for Station mode. After these components have been initialized, the Wi-Fi driver is configured with the target network's **SSID** and **password**, and the ESP32 is switched into **Station mode**.
+
+Unlike previous examples, Station mode relies heavily on the ESP-IDF **Event System**. Event handlers are registered to monitor changes in the Wi-Fi connection state. When the Wi-Fi driver starts, the ESP32 automatically attempts to connect to the configured wireless network. If the connection is lost, the event handler immediately begins another connection attempt. Once the router assigns an IP address to the ESP32 through DHCP, an IP event is generated, indicating that the device is successfully connected and ready for network communication.
+
+After establishing the network connection, the application creates an **HTTP client** to communicate with an external web server. The ESP-IDF `esp_http_client` library simplifies the process of sending HTTP requests and receiving responses from remote servers. In this example, the client performs an **HTTP GET** request to a public weather API, demonstrating how the ESP32 can retrieve information from Internet services.
+
+The HTTP client also uses an **event handler** to process incoming data. As the server sends its response, the HTTP client generates events that notify the application when data has been received and when the request has completed successfully. 
+
+To keep the project organized, the application is divided into several components. The `wifi.c` component initializes the Wi-Fi subsystem and manages the Station mode configuration, `events.c` handles both Wi-Fi and HTTP client events, `client.c` contains the HTTP client implementation responsible for communicating with the remote server, and `app_main()` simply initializes the Wi-Fi connection, waits for the network to become available, and starts the HTTP request. 
