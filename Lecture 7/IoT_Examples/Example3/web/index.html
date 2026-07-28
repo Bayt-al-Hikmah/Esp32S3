@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Obstacle Detection</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="status-dot" id="connectionDot"></div>
+            <span class="status-text" id="connectionText">Connecting...</span>
+        </header>
+
+        <main class="main">
+            <h1 class="title">
+                <span class="title-icon">📡</span>
+                Obstacle Detection
+            </h1>
+
+            <div class="radar-container">
+                <div class="radar-ring ring-1"></div>
+                <div class="radar-ring ring-2"></div>
+                <div class="radar-ring ring-3"></div>
+                <div class="radar-sweep"></div>
+                <div class="radar-center">
+                    <div class="radar-icon" id="radarIcon">🔍</div>
+                </div>
+                <div class="radar-ping" id="radarPing"></div>
+            </div>
+
+            <div class="info-card" id="infoCard">
+                <div class="info-label">Sensor Status</div>
+                <div class="info-value" id="obstacle">Waiting for data...</div>
+                <div class="info-bar">
+                    <div class="info-bar-fill" id="infoBarFill"></div>
+                </div>
+            </div>
+
+            <div class="log-panel">
+                <div class="log-header">
+                    <span class="log-title">📋 Event Log</span>
+                    <span class="log-count" id="logCount">0 events</span>
+                </div>
+                <div class="log-list" id="logList"></div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <span>ESP32 Web Panel</span>
+            <span class="footer-sep">•</span>
+            <span>SSE Stream</span>
+        </footer>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>

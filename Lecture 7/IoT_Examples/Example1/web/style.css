@@ -1,0 +1,17 @@
+div{
+display:flex;
+row-gap:10px;
+align-items:center;  
+flex-direction:column;
+}
+.red{
+    background:red;
+}
+.green{
+    background:green;
+}
+button{
+border:none;
+color:white;
+padding:10px;
+}

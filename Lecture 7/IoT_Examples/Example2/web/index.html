@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Servo Control</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="status-dot"></div>
+                <h1>Servo Control</h1>
+                <span class="subtitle">ESP32 Web Panel</span>
+            </div>
+
+            <div class="gauge-wrapper">
+                <div class="gauge">
+                    <div class="gauge-track"></div>
+                    <div class="gauge-fill" id="gaugeFill"></div>
+                    <div class="gauge-center">
+                        <span class="gauge-value" id="gaugeValue">0</span>
+                        <span class="gauge-unit">°</span>
+                    </div>
+                </div>
+                <div class="gauge-ticks">
+                    <span>0°</span>
+                    <span>90°</span>
+                    <span>180°</span>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="slider-container">
+                    <input 
+                        type="range" 
+                        id="angle" 
+                        min="0" 
+                        max="180" 
+                        value="0" 
+                        class="slider"
+                    />
+                    <div class="slider-labels">
+                        <span>0°</span>
+                        <label for="angle" id="angleLabel">Angle: 0°</label>
+                        <span>180°</span>
+                    </div>
+                </div>
+
+                <div class="preset-buttons">
+                    <button class="btn" data-angle="0">0°</button>
+                    <button class="btn" data-angle="45">45°</button>
+                    <button class="btn" data-angle="90">90°</button>
+                    <button class="btn" data-angle="135">135°</button>
+                    <button class="btn" data-angle="180">180°</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Servo updated</div>
+    <script src="/script.js"></script>
+</body>
+</html>

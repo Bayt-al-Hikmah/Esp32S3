@@ -2,13 +2,12 @@
 #include "server.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "ltfs.h"
 
 void app_main(void) {
 
-    gpio_set_direction(10, GPIO_MODE_OUTPUT);
-    gpio_set_direction(11, GPIO_MODE_OUTPUT);
-    gpio_set_direction(12, GPIO_MODE_OUTPUT);
-
+    init_littlefs();
+    initialize_pins();
     wifi_init_ap();
     vTaskDelay(pdMS_TO_TICKS(10000));
     start_webserver();

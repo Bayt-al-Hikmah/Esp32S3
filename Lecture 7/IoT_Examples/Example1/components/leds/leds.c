@@ -6,7 +6,7 @@ bool yellowLed = false;
 bool greenLed = false;
 
 
-bool toggle_led(int ledNumber){
+int toggle_led(int ledNumber){
     if (ledNumber == 1) {
         greenLed ^= 1;
         gpio_set_level(10, greenLed);
@@ -21,4 +21,10 @@ bool toggle_led(int ledNumber){
         return yellowLed;
     }
     return false;
+}
+
+void initialize_pins(){
+    gpio_set_direction(10, GPIO_MODE_OUTPUT);
+    gpio_set_direction(11, GPIO_MODE_OUTPUT);
+    gpio_set_direction(12, GPIO_MODE_OUTPUT);
 }

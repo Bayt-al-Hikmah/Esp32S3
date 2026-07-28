@@ -8,7 +8,6 @@
 #include "leds.h"
 
 esp_err_t led_handler(httpd_req_t *req);
-esp_err_t dashboard_handler(httpd_req_t *req);
 
 
 #endif

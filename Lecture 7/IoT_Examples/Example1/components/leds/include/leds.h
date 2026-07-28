@@ -6,6 +6,6 @@
 #include <stdbool.h>
 
 int toggle_led(int ledNumber);
-
+void initialize_pins();
 
 #endif
