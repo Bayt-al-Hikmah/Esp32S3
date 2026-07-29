@@ -4,12 +4,14 @@
 #include "fire_sensor.h"
 #include "moisture_sensor.h"
 #include "light_sensor.h"
+#include "ltfs.h"
+
 void app_main(void){
 
     fire_state = xQueueCreate(10, sizeof(int));
     obstacle_state = xQueueCreate(10, sizeof(int));
-
     sse_mutex = xSemaphoreCreateMutex(); 
+    init_littlefs();
     wifi_init_ap();  
     start_webserver();
     setup();

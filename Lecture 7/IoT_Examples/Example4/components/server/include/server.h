@@ -6,6 +6,7 @@
 #include "esp_http_server.h"
 
 #include "handlers.h"
+#include "static.h"
 
 httpd_handle_t start_webserver(void);
 

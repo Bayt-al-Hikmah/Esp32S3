@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Sensor Panel</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="app">
+        <header class="top-bar">
+            <div class="brand">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <h1>Sensor Panel</h1>
+            </div>
+            <div class="connection" id="conn-status">
+                <span class="conn-dot"></span>
+                <span class="conn-text">Connecting...</span>
+            </div>
+        </header>
+
+        <main class="grid">
+            <article class="sensor-card" data-sensor="obstacle">
+                <div class="sensor-header">
+                    <div class="sensor-icon icon-obstacle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <div class="sensor-meta">
+                        <h2>Obstacle</h2>
+                        <span class="sensor-id">IR-01</span>
+                    </div>
+                </div>
+                <div class="sensor-body">
+                    <div class="value-display">
+                        <span class="value" id="obstacle">—</span>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="status-badge" id="obstacle-badge">Waiting</span>
+                        <span class="last-seen" id="obstacle-time">—</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sensor-card" data-sensor="flame">
+                <div class="sensor-header">
+                    <div class="sensor-icon icon-flame">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                        </svg>
+                    </div>
+                    <div class="sensor-meta">
+                        <h2>Flame</h2>
+                        <span class="sensor-id">FLM-02</span>
+                    </div>
+                </div>
+                <div class="sensor-body">
+                    <div class="value-display">
+                        <span class="value" id="flame">—</span>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="status-badge" id="flame-badge">Waiting</span>
+                        <span class="last-seen" id="flame-time">—</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sensor-card" data-sensor="light">
+                <div class="sensor-header">
+                    <div class="sensor-icon icon-light">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </div>
+                    <div class="sensor-meta">
+                        <h2>Light</h2>
+                        <span class="sensor-id">LDR-03</span>
+                    </div>
+                </div>
+                <div class="sensor-body">
+                    <div class="value-display">
+                        <span class="value" id="light">—</span>
+                        <span class="unit" id="light-unit"></span>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="status-badge" id="light-badge">Waiting</span>
+                        <span class="last-seen" id="light-time">—</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="sensor-card" data-sensor="moisture">
+                <div class="sensor-header">
+                    <div class="sensor-icon icon-moisture">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                        </svg>
+                    </div>
+                    <div class="sensor-meta">
+                        <h2>Moisture</h2>
+                        <span class="sensor-id">SOIL-04</span>
+                    </div>
+                </div>
+                <div class="sensor-body">
+                    <div class="value-display">
+                        <span class="value" id="moisture">—</span>
+                        <span class="unit" id="moisture-unit"></span>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="status-badge" id="moisture-badge">Waiting</span>
+                        <span class="last-seen" id="moisture-time">—</span>
+                    </div>
+                </div>
+            </article>
+        </main>
+
+        <footer class="app-footer">
+            <span>ESP32 Web Server &middot; SSE Stream</span>
+            <span id="uptime">—</span>
+        </footer>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
