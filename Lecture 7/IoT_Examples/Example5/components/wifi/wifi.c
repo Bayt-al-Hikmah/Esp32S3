@@ -1,8 +1,6 @@
-#include "esp_wifi.h"  
-#include "esp_event.h"  
-#include "nvs_flash.h"  
+
 #include "wifi.h"  
-#include <string.h>
+
 void wifi_init_ap(void)  {  
 	nvs_flash_init();  
 	esp_netif_init();  

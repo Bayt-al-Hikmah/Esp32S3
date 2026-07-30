@@ -2,7 +2,10 @@
 #define WIFI_H  
   
 #include <stdint.h>  
-
+#include "esp_wifi.h"  
+#include "esp_event.h"  
+#include "nvs_flash.h"  
+#include <string.h>
 
 #define WIFI_SSID      "ESP32"
 #define WIFI_PASS      "Alitigui123"

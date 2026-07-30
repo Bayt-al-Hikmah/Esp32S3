@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-S3 Camera Stream</title>
+    <link rel="stylesheet" href="/style.css">
+    
+<base target="_blank">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">📷</div>
+            <div class="title-group">
+                <h1>ESP32-S3 Camera Stream</h1>
+                <p>Live MJPEG feed from device</p>
+            </div>
+        </div>
+        <div class="status-badge" id="statusBadge">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Connecting...</span>
+        </div>
+    </div>
+
+    <!-- Stream Card -->
+    <div class="stream-card">
+        <div class="stream-header">
+            <div class="stream-meta">
+                <div class="meta-item">
+                    <span>📐</span>
+                    <span class="resolution-badge" id="resBadge">-- x --</span>
+                </div>
+                <div class="meta-item">
+                    <span>⚡</span>
+                    <span>FPS: <span class="value" id="fpsCounter">0</span></span>
+                </div>
+                <div class="meta-item">
+                    <span>⏱️</span>
+                    <span>Uptime: <span class="value" id="uptime">00:00:00</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stream-container" id="streamContainer">
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <div class="loading-text">Connecting to camera...</div>
+                <div class="loading-sub">ESP32-S3 at /stream</div>
+            </div>
+
+            <!-- Error Overlay -->
+            <div class="error-overlay" id="errorOverlay">
+                <div class="error-icon">⚠️</div>
+                <div class="error-text">Stream disconnected</div>
+                <div class="error-sub">Check your connection and try again</div>
+                <button class="retry-btn" onclick="retryStream()">Retry Connection</button>
+            </div>
+
+            <!-- Core Stream Image -->
+            <img src="/stream" id="streamImg" class="loading" alt="Camera Stream" />
+        </div>
+
+        <div class="controls-bar">
+            <div class="controls-group">
+                <button class="btn primary" onclick="takeSnapshot()">
+                    <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M20 6h-2.5l-1.5-2h-7L7.5 6H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2Zm-10 13c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6Z"/></svg>
+                    Snapshot
+                </button>
+                <button class="btn" onclick="toggleFullscreen()">
+                    <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3Zm-2-4h2V7h3V5H5v5Zm12 7h-3v2h5v-5h-2v3ZM14 5v2h3v3h2V5h-5Z"/></svg>
+                    Fullscreen
+                </button>
+            </div>
+            <div class="controls-group">
+                <button class="btn" onclick="toggleMirror()">
+                    <svg viewBox="0 0 24 24"><path d="M15 21h2v-2h-2v2Zm4-2h2v-2h-2v2ZM7 21h2v-2H7v2Zm4-2h2v-2h-2v2Zm8-4h2v-2h-2v2ZM7 17h2v-2H7v2Zm12-4h2V7h-2v6ZM7 13h2V7H7v6Zm4-2h2V7h-2v4Zm4 0h2V7h-2v4Z"/></svg>
+                    Mirror
+                </button>
+                <button class="btn" onclick="toggleFlip()">
+                    <svg viewBox="0 0 24 24"><path d="M12 4.81V19c-3.31 0-6-2.63-6-5.93 0-1.56.63-3.06 1.75-4.17l4.25-4.09ZM12 2 6.35 7.56l-.01.01C4.7 9.17 3.8 11.31 3.8 13.62c0 4.98 4.04 9.02 9 9.02V2Z"/></svg>
+                    Flip
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel">
+        <div class="info-card">
+            <div class="info-icon">🖥️</div>
+            <div class="info-content">
+                <h3>Device</h3>
+                <p>ESP32-S3</p>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-icon">📡</div>
+            <div class="info-content">
+                <h3>Protocol</h3>
+                <p>MJPEG Stream</p>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-icon">💾</div>
+            <div class="info-content">
+                <h3>Endpoint</h3>
+                <p>/stream</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        ESP32-S3 Web Panel &mdash; Backend unchanged
+    </div>
+
+    <script src="/script.js">
+
+    </script>
+
+</body>
+</html>
