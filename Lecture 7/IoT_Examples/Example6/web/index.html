@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Web Panel</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="panel-header">
+            <div class="header-content">
+                <h1>ESP32 Camera Panel</h1>
+                <div class="status-badge" id="connectionStatus">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="panel-main">
+            <div class="camera-section">
+                <div class="camera-feed-wrapper">
+                    <img id="cam" alt="Camera Stream" width="640">
+                    <div class="camera-overlay" id="cameraOverlay">
+                        <div class="spinner"></div>
+                        <span>Waiting for stream...</span>
+                    </div>
+                </div>
+                <div class="feed-info">
+                    <span class="fps-counter" id="fpsCounter">0 FPS</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="control-card">
+                    <h2>LED Control</h2>
+                    <div class="led-indicator" id="ledIndicator">
+                        <div class="led-light" id="ledLight"></div>
+                        <span class="led-label" id="ledLabel">OFF</span>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-on" onclick="ledOn()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18h6M10 22h4M12 2v2M12 22v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 6.34L4.93 4.93M19.07 19.07l-1.41-1.41"/>
+                            </svg>
+                            LED ON
+                        </button>
+                        <button class="btn btn-off" onclick="ledOff()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                            </svg>
+                            LED OFF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-card">
+                    <h2>System Info</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Endpoint</span>
+                            <span class="info-value">192.168.4.1/ws</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Resolution</span>
+                            <span class="info-value">640px</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Protocol</span>
+                            <span class="info-value">WebSocket</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="panel-footer">
+            <span>ESP32 IoT Control Interface</span>
+        </footer>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>

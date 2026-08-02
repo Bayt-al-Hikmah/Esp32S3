@@ -1,25 +1,9 @@
-
 #ifndef CAMERA_H  
 #define CAMERA_H  
 
 #include "esp_camera.h"
-#include "esp_http_server.h"
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"  
-#include "freertos/task.h"  
-
-
-#include <esp_event.h>
-#include <esp_system.h>
-#include <sys/param.h>
-#include "esp_eth.h"
-#include "esp_http_server.h"
-
-
 #include "driver/gpio.h"
 
-
-#define LED_PIN 21
 
 #define CAM_PIN_PWDN    -1 
 #define CAM_PIN_RESET   -1 
@@ -42,6 +26,5 @@
 
 esp_err_t camera_init();
 
-esp_err_t ws_handler(httpd_req_t *req);
 
 #endif
